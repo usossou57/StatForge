@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport d'analyse — {{ method }}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        h1 {
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .metadata {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .metadata p {
+            margin: 5px 0;
+        }
+        .diagnostic {
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid;
+            border-radius: 3px;
+        }
+        .diagnostic.certain_issue {
+            background-color: #fee;
+            border-color: #c33;
+        }
+        .diagnostic.probable_issue {
+            background-color: #ffeaa7;
+            border-color: #fdcb6e;
+        }
+        .diagnostic.warning {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+        }
+        .diagnostic.information {
+            background-color: #d1ecf1;
+            border-color: #17a2b8;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: "Courier New", Courier, monospace;
+            font-size: 14px;
+        }
+        ul {
+            margin: 10px 0;
+        }
+        li {
+            margin: 5px 0;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rapport d'analyse — {{ method }}</h1>
+
+    <div class="metadata">
+        <p><strong>Dataset :</strong> {{ dataset_id }}</p>
+        <p><strong>Taille d'échantillon :</strong> {{ sample_size }}</p>
+        <p><strong>Date d'analyse :</strong> {{ created_at }}</p>
+    </div>
+
+    <h2>Variables</h2>
+    <ul>
+        {% for var_name, var_info in variables.items() %}
+        <li><strong>{{ var_name }}</strong> : {{ var_info.get('role', 'N/A') }}</li>
+        {% endfor %}
+    </ul>
+
+    {% if preprocessing %}
+    <h2>Prétraitement</h2>
+    <ul>
+        {% for step in preprocessing %}
+        <li>{{ step }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if coefficients %}
+    <h2>Coefficients</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Variable</th>
+                <th>Estimate</th>
+                <th>Erreur standard</th>
+                <th>IC 95%</th>
+                <th>p-value</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for coef in coefficients %}
+            <tr>
+                <td>{{ coef.name }}</td>
+                <td>{{ "%.4f"|format(coef.estimate) }}</td>
+                <td>{{ "%.4f"|format(coef.se) }}</td>
+                <td>[{{ "%.4f"|format(coef.ci_lower) }}, {{ "%.4f"|format(coef.ci_upper) }}]</td>
+                <td>{{ "%.4e"|format(coef.p_value) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if model_metrics %}
+    <h2>Métriques du modèle</h2>
+    <ul>
+        {% for metric, value in model_metrics.items() %}
+        <li><strong>{{ metric }}</strong> : {{ "%.4f"|format(value) }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if diagnostics %}
+    <h2>Diagnostics</h2>
+    {% for diag in diagnostics %}
+    <div class="diagnostic {{ diag.severity }}">
+        <strong>[{{ diag.severity }}]</strong> {{ diag.code }} : {{ diag.message }}
+        {% if diag.details %}
+        <br><small>Détails : {{ diag.details }}</small>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if warnings %}
+    <h2>Avertissements</h2>
+    <ul>
+        {% for warning in warnings %}
+        <li>{{ warning }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if assumptions_checked %}
+    <h2>Hypothèses vérifiées</h2>
+    <ul>
+        {% for assumption in assumptions_checked %}
+        <li>{{ assumption }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <h2>Code reproductible</h2>
+    <pre><code>{{ generated_code }}</code></pre>
+
+    <h2>Versions logicielles</h2>
+    <ul>
+        {% for software, version in software_versions.items() %}
+        <li><strong>{{ software }}</strong> : {{ version }}</li>
+        {% endfor %}
+    </ul>
+
+    <div class="footer">
+        Rapport généré automatiquement par StatAnalysis.
+    </div>
+</body>
+</html>

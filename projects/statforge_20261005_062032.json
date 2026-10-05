@@ -1,0 +1,73 @@
+{
+  "project_id": "statforge_20261005_062032",
+  "created_at": "2026-10-05T06:20:32.724829+00:00",
+  "dataset_name": "Base de données GRH FINAL 06012022.sav OK1-1.xlsx",
+  "dataset_hash": null,
+  "dataset_rows": 514,
+  "dataset_columns": 59,
+  "research_question": "Y'a-t-il un lien  entre le score de la structure et le score économique  ?",
+  "proposed_method": "linear_regression",
+  "outcome_variable": "Score Efficience Economique",
+  "predictor_variables": [
+    "Score Structure"
+  ],
+  "reference_category": null,
+  "study_design": "associative",
+  "confidence": "high",
+  "rationale": "Les deux variables 'Score Structure' et 'Score Efficience Economique' sont de type continu. Pour tester l'existence d'une association linéaire entre ces deux variables quantitatives, une régression linéaire simple est la méthode statistique appropriée.",
+  "assumptions_to_check": [
+    "Linéarité de la relation entre les variables",
+    "Normalité des résidus",
+    "Homoscédasticité (variance constante des résidus)",
+    "Indépendance des observations"
+  ],
+  "method": "linear_regression",
+  "sample_size": 514,
+  "estimates": {
+    "Intercept": 1.6701112237716942,
+    "Q('Score Structure')": 0.18620072674519655
+  },
+  "p_values": {
+    "Intercept": 5.778620192918736e-22,
+    "Q('Score Structure')": 0.007284603931708789
+  },
+  "model_metrics": {
+    "r_squared": 0.013980348220718253,
+    "adj_r_squared": 0.012054528588336888,
+    "f_statistic": 7.259427614947817,
+    "f_pvalue": 0.007284603931708801,
+    "aic": 1225.2328805248326,
+    "bic": 1233.717327055743,
+    "n_obs": 514
+  },
+  "diagnostics": [],
+  "warnings": [],
+  "assumptions_checked": [
+    "Linéarité",
+    "Indépendance",
+    "Normalité des résidus",
+    "Homoscédasticité"
+  ],
+  "generated_code": "import pandas as pd\nimport statsmodels.formula.api as smf\n\ndf = pd.read_csv(\"CHEMIN_VERS_VOS_DONNEES.csv\")\nformula = \"Q('Score Efficience Economique') ~ Q('Score Structure')\"\nmodel = smf.ols(formula, data=df).fit()\nprint(model.summary())\n",
+  "execution_log": [
+    "Modèle OLS ajusté avec succès"
+  ],
+  "software_versions": {
+    "python": "3.11.16",
+    "statsmodels": "0.15.0"
+  },
+  "preprocessing": [
+    {
+      "description": "Ajout automatique d'une constante par statsmodels"
+    }
+  ],
+  "variables": {
+    "Score Efficience Economique": {
+      "role": "outcome"
+    },
+    "Score Structure": {
+      "role": "predictor"
+    }
+  },
+  "project_path": null
+}

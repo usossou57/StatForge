@@ -1,0 +1,60 @@
+{
+  "project_id": "statforge_20261005_065131",
+  "created_at": "2026-10-05T06:51:31.299712+00:00",
+  "dataset_name": "CAP_étudiants_FSS__mesures_de_prévention_cardiovasculaires_en_2026_.xlsx",
+  "dataset_hash": null,
+  "dataset_rows": 200,
+  "dataset_columns": 76,
+  "research_question": "Y'a t il un lien entre le stress subi et le score d'attitude ?",
+  "proposed_method": "chi_square",
+  "outcome_variable": "Score attitude",
+  "predictor_variables": [
+    "Ressentez-vous du stress lié aux études ou dans votre vie quotidienne ?"
+  ],
+  "reference_category": null,
+  "study_design": "associative",
+  "confidence": "high",
+  "rationale": "La variable outcome 'Score attitude' est catégorielle binaire (mauvais/bon) et la variable prédictive 'Ressentez-vous du stress lié aux études ou dans votre vie quotidienne ?' est également catégorielle. Le test du chi-carré d'indépendance est la méthode appropriée pour tester l'association entre deux variables catégorielles.",
+  "assumptions_to_check": [
+    "Indépendance des observations",
+    "Effectifs théoriques suffisants (>= 5 dans la majorité des cellules)"
+  ],
+  "method": "chi_square",
+  "sample_size": 200,
+  "estimates": {
+    "chi2": 0.03825956711186887,
+    "dof": 3
+  },
+  "p_values": {
+    "chi2": 0.998032342247389
+  },
+  "model_metrics": {
+    "chi2_statistic": 0.03825956711186887,
+    "degrees_of_freedom": 3
+  },
+  "diagnostics": [],
+  "warnings": [],
+  "assumptions_checked": [
+    "Indépendance des observations",
+    "Effectifs théoriques >= 5"
+  ],
+  "generated_code": "import pandas as pd\nimport scipy.stats as stats\ncontingency = pd.crosstab(df['Score attitude'], df['Ressentez-vous du stress lié aux études ou dans votre vie quotidienne ?'])\nchi2, p, dof, expected = stats.chi2_contingency(contingency)\n",
+  "execution_log": [
+    "chi2_contingency executed"
+  ],
+  "software_versions": {
+    "scipy": "1.17.1"
+  },
+  "preprocessing": [],
+  "variables": {
+    "var1": {
+      "role": "predictor",
+      "name": "Score attitude"
+    },
+    "var2": {
+      "role": "predictor",
+      "name": "Ressentez-vous du stress lié aux études ou dans votre vie quotidienne ?"
+    }
+  },
+  "project_path": null
+}

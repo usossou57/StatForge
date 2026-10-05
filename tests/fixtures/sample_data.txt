@@ -1,0 +1,11 @@
+age,income,gender,education,satisfaction
+25,35000,M,Bachelor,High
+32,45000,F,Master,Medium
+28,38000,M,High School,Low
+35,52000,F,PhD,High
+41,61000,M,Master,Medium
+29,42000,F,Bachelor,High
+38,55000,M,PhD,Medium
+26,36000,F,High School,Low
+45,68000,M,Master,High
+33,48000,F,Bachelor,Medium

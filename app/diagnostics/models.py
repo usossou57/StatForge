@@ -1,4 +1,8 @@
-"""Modèles de données pour les diagnostics statistiques."""
+"""Modèles pour le moteur de diagnostics statistiques.
+
+Ce module définit les structures de données pour représenter les diagnostics
+détectés lors des analyses statistiques.
+"""
 
 from dataclasses import dataclass, field
 from enum import Enum
@@ -16,7 +20,7 @@ class Severity(str, Enum):
 class DiagnosticFinding:
     """Un diagnostic détecté par le Diagnostic Engine — toujours produit par du code
     déterministe, jamais par un LLM."""
-    code: str
+    code: str                     # ex. "SEPARATION_COMPLETE", "HIGH_VIF"
     severity: Severity
-    message: str
+    message: str                  # explication en langage clair (français)
     details: dict = field(default_factory=dict)

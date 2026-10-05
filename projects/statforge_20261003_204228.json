@@ -1,0 +1,83 @@
+{
+  "project_id": "statforge_20261003_204228",
+  "created_at": "2026-10-03T20:42:28.900365+00:00",
+  "dataset_name": "sample_data.csv",
+  "dataset_hash": null,
+  "dataset_rows": 10,
+  "dataset_columns": 5,
+  "research_question": "Quel est l'effet de  l'âge et du niveau d'étude sur le revenu annuel  ?",
+  "proposed_method": "linear_regression",
+  "outcome_variable": "income",
+  "predictor_variables": [
+    "age",
+    "education"
+  ],
+  "reference_category": null,
+  "study_design": "associative",
+  "confidence": "high",
+  "rationale": "La variable outcome 'income' est numérique continue. La question porte sur l'effet de deux prédicteurs ('age' et 'education') sur cette variable. Une régression linéaire multiple est la méthode standard pour modéliser l'association entre une variable dépendante continue et plusieurs variables indépendantes (numériques ou catégorielles).",
+  "assumptions_to_check": [
+    "Linéarité de la relation entre les variables prédicatrices et la variable outcome",
+    "Normalité des résidus",
+    "Homoscédasticité (variance constante des résidus)",
+    "Absence de multicolinéarité entre les variables prédicatrices"
+  ],
+  "method": "linear_regression",
+  "sample_size": 10,
+  "estimates": {
+    "Intercept": -7477.501092180028,
+    "education[T.High School]": -1277.4137177806897,
+    "education[T.Master]": -1177.8069025775476,
+    "education[T.PhD]": -876.3652249890802,
+    "age": 1694.6264744430086
+  },
+  "p_values": {
+    "Intercept": 0.02448291289944302,
+    "education[T.High School]": 0.1840259892133217,
+    "education[T.Master]": 0.3309462800159584,
+    "education[T.PhD]": 0.423958653022976,
+    "age": 4.099682976279274e-06
+  },
+  "model_metrics": {
+    "r_squared": 0.9963602001609865,
+    "adj_r_squared": 0.9934483602897757,
+    "f_statistic": 342.17547812706096,
+    "f_pvalue": 2.790173593013135e-06,
+    "aic": 167.30742099556957,
+    "bic": 168.8203464605398,
+    "n_obs": 10
+  },
+  "diagnostics": [],
+  "warnings": [],
+  "assumptions_checked": [
+    "Linéarité",
+    "Indépendance",
+    "Normalité des résidus",
+    "Homoscédasticité"
+  ],
+  "generated_code": "import pandas as pd\nimport statsmodels.formula.api as smf\n\ndf = pd.read_csv(\"CHEMIN_VERS_VOS_DONNEES.csv\")\nformula = \"income ~ age + education\"\nmodel = smf.ols(formula, data=df).fit()\nprint(model.summary())\n",
+  "execution_log": [
+    "Modèle OLS ajusté avec succès"
+  ],
+  "software_versions": {
+    "python": "3.11.16",
+    "statsmodels": "0.15.0"
+  },
+  "preprocessing": [
+    {
+      "description": "Ajout automatique d'une constante par statsmodels"
+    }
+  ],
+  "variables": {
+    "income": {
+      "role": "outcome"
+    },
+    "age": {
+      "role": "predictor"
+    },
+    "education": {
+      "role": "predictor"
+    }
+  },
+  "project_path": null
+}

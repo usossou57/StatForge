@@ -1,0 +1,60 @@
+{
+  "project_id": "statforge_4cb021465d9b",
+  "created_at": "2026-10-05T06:00:30.992898+00:00",
+  "dataset_name": "sample_data.csv",
+  "dataset_hash": null,
+  "dataset_rows": 10,
+  "dataset_columns": 5,
+  "research_question": "Quel  est le lien entre l'âge et le niveau d'éducation  ?",
+  "proposed_method": "chi_square",
+  "outcome_variable": "education",
+  "predictor_variables": [
+    "age"
+  ],
+  "reference_category": null,
+  "study_design": "associative",
+  "confidence": "medium",
+  "rationale": "La variable outcome 'education' est catégorielle (non binaire selon le contexte général des niveaux d'éducation) et la variable prédictrice 'age' doit être catégorisée (par tranches) pour effectuer un test du chi-carré d'indépendance, qui est la méthode standard pour tester l'association entre deux variables catégorielles.",
+  "assumptions_to_check": [
+    "Indépendance des observations",
+    "Effectifs théoriques suffisants (généralement >= 5 par cellule)"
+  ],
+  "method": "chi_square",
+  "sample_size": 10,
+  "estimates": {
+    "chi2": 30.0,
+    "dof": 27
+  },
+  "p_values": {
+    "chi2": 0.3141538334001014
+  },
+  "model_metrics": {
+    "chi2_statistic": 30.0,
+    "degrees_of_freedom": 27
+  },
+  "diagnostics": [],
+  "warnings": [],
+  "assumptions_checked": [
+    "Indépendance des observations",
+    "Effectifs théoriques >= 5"
+  ],
+  "generated_code": "import pandas as pd\nimport scipy.stats as stats\ncontingency = pd.crosstab(df['education'], df['age'])\nchi2, p, dof, expected = stats.chi2_contingency(contingency)\n",
+  "execution_log": [
+    "chi2_contingency executed"
+  ],
+  "software_versions": {
+    "scipy": "1.17.1"
+  },
+  "preprocessing": [],
+  "variables": {
+    "var1": {
+      "role": "predictor",
+      "name": "education"
+    },
+    "var2": {
+      "role": "predictor",
+      "name": "age"
+    }
+  },
+  "project_path": null
+}
