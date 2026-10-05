@@ -1,0 +1,99 @@
+{
+  "project_id": "statforge_20261003_210338",
+  "created_at": "2026-10-03T21:03:38.527891+00:00",
+  "dataset_name": "sample_data.csv",
+  "dataset_hash": null,
+  "dataset_rows": 10,
+  "dataset_columns": 5,
+  "research_question": "Quel est l'effet de  l'âge  et du sexe sur le  niveau d'étude ?",
+  "proposed_method": "multinomial_logistic_regression",
+  "outcome_variable": "education",
+  "predictor_variables": [
+    "age",
+    "gender"
+  ],
+  "reference_category": null,
+  "study_design": "associative",
+  "confidence": "medium",
+  "rationale": "La variable outcome 'education' est catégorielle (impliqué par le nom et le contexte de 'niveau d'étude', généralement ordonnée ou nominale avec >= 3 modalités). L'âge est numérique et le sexe binaire. La régression logistique multinomiale est la méthode standard pour modéliser l'effet de plusieurs prédicteurs sur une variable dépendante catégorielle à plus de deux modalités.",
+  "assumptions_to_check": [
+    "Indépendance des observations",
+    "Absence de multicollinéarité entre les prédicteurs",
+    "Taille d'échantillon suffisante par modalité de l'outcome"
+  ],
+  "method": "multinomial_logistic_regression",
+  "sample_size": 10,
+  "estimates": {
+    "const[Bachelor]": -22.709480332556563,
+    "age[Bachelor]": 1.004481323549013,
+    "gender_F[Bachelor]": -10.578765956323785,
+    "gender_M[Bachelor]": -12.130722076261758,
+    "const[Master]": 5.5537821419970355,
+    "age[Master]": -0.31323025734290466,
+    "gender_F[Master]": 2.792631821143716,
+    "gender_M[Master]": 2.7611512036399932,
+    "const[High School]": -15.649285091993772,
+    "age[High School]": 0.7108056445742054,
+    "gender_F[High School]": -7.768604225915864,
+    "gender_M[High School]": -7.880680390336907
+  },
+  "p_values": {
+    "const[Bachelor]": 0.9999995333874628,
+    "age[Bachelor]": 0.18681691005034107,
+    "gender_F[Bachelor]": 0.9999996374244159,
+    "gender_M[Bachelor]": NaN,
+    "const[Master]": NaN,
+    "age[Master]": 0.49587281572223185,
+    "gender_F[Master]": NaN,
+    "gender_M[Master]": NaN,
+    "const[High School]": NaN,
+    "age[High School]": 0.28278647924228273,
+    "gender_F[High School]": NaN,
+    "gender_M[High School]": NaN
+  },
+  "model_metrics": {
+    "aic": 34.2274846358829,
+    "bic": 36.95075047282931,
+    "log_likelihood": -8.113742317941451,
+    "n_categories": 4,
+    "n_observations": 10
+  },
+  "diagnostics": [],
+  "warnings": [],
+  "assumptions_checked": [
+    "Indépendance des observations (IIA)",
+    "Absence de multicollinéarité forte entre prédicteurs",
+    "Taille d'échantillon suffisante par catégorie (≥ 10 obs/catégorie)",
+    "Linéarité des log-odds pour les prédicteurs numériques"
+  ],
+  "generated_code": "import pandas as pd\nimport numpy as np\nimport statsmodels.api as sm\n\ndf = pd.read_csv(\"CHEMIN_VERS_VOS_DONNEES.csv\")\ny, categories = pd.factorize(df[\"education\"].dropna())\nX = pd.get_dummies(df[['age', 'gender']].dropna(), drop_first=False)\nX = sm.add_constant(X)\nmodel = sm.MNLogit(y, X).fit(disp=0)\nprint(model.summary())\n",
+  "execution_log": [
+    "MNLogit fitted with 4 categories, 4 features"
+  ],
+  "software_versions": {
+    "statsmodels": "0.15.0"
+  },
+  "preprocessing": [
+    {
+      "description": "Encodage outcome : 4 catégories factorisées"
+    },
+    {
+      "description": "Dummy encoding pour variables non-numériques parmi les prédicteurs"
+    }
+  ],
+  "variables": {
+    "outcome": {
+      "role": "outcome",
+      "name": "education"
+    },
+    "age": {
+      "role": "predictor",
+      "name": "age"
+    },
+    "gender": {
+      "role": "predictor",
+      "name": "gender"
+    }
+  },
+  "project_path": null
+}

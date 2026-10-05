@@ -1,0 +1,60 @@
+{
+  "project_id": "statforge_20261003_210744",
+  "created_at": "2026-10-03T21:07:44.572465+00:00",
+  "dataset_name": "sample_data.csv",
+  "dataset_hash": null,
+  "dataset_rows": 10,
+  "dataset_columns": 5,
+  "research_question": "Quel est le lien entre le sexe et le  niveau d'éducation ?",
+  "proposed_method": "chi_square",
+  "outcome_variable": "education",
+  "predictor_variables": [
+    "gender"
+  ],
+  "reference_category": null,
+  "study_design": "associative",
+  "confidence": "high",
+  "rationale": "Les deux variables (gender et education) sont catégorielles. Le test du chi-carré d'indépendance est la méthode standard pour évaluer l'association entre deux variables qualitatives.",
+  "assumptions_to_check": [
+    "Indépendance des observations",
+    "Effectifs théoriques suffisants (généralement > 5 par cellule)"
+  ],
+  "method": "chi_square",
+  "sample_size": 10,
+  "estimates": {
+    "chi2": 0.6666666666666666,
+    "dof": 3
+  },
+  "p_values": {
+    "chi2": 0.8810148425137847
+  },
+  "model_metrics": {
+    "chi2_statistic": 0.6666666666666666,
+    "degrees_of_freedom": 3
+  },
+  "diagnostics": [],
+  "warnings": [],
+  "assumptions_checked": [
+    "Indépendance des observations",
+    "Effectifs théoriques >= 5"
+  ],
+  "generated_code": "import pandas as pd\nimport scipy.stats as stats\ncontingency = pd.crosstab(df['education'], df['gender'])\nchi2, p, dof, expected = stats.chi2_contingency(contingency)\n",
+  "execution_log": [
+    "chi2_contingency executed"
+  ],
+  "software_versions": {
+    "scipy": "1.17.1"
+  },
+  "preprocessing": [],
+  "variables": {
+    "var1": {
+      "role": "predictor",
+      "name": "education"
+    },
+    "var2": {
+      "role": "predictor",
+      "name": "gender"
+    }
+  },
+  "project_path": null
+}

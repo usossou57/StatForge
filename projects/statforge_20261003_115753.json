@@ -1,0 +1,77 @@
+{
+  "project_id": "statforge_20261003_115753",
+  "created_at": "2026-10-03T11:57:53.744709+00:00",
+  "dataset_name": "sample_data.csv",
+  "dataset_hash": null,
+  "dataset_rows": 10,
+  "dataset_columns": 5,
+  "research_question": "Quel  est l'effet du niveau d'éducation sur le revenu annuel ?",
+  "proposed_method": "linear_regression",
+  "outcome_variable": "income",
+  "predictor_variables": [
+    "education"
+  ],
+  "reference_category": null,
+  "study_design": "associative",
+  "confidence": "medium",
+  "rationale": "La variable outcome 'income' est numérique continue (type count). La variable prédictive 'education' est catégorielle. Une régression linéaire permet d'estimer l'effet moyen du niveau d'éducation sur le revenu, en traitant 'education' comme une variable factorielle.",
+  "assumptions_to_check": [
+    "Linéarité",
+    "Normalité des résidus",
+    "Homoscédasticité",
+    "Indépendance des observations"
+  ],
+  "method": "linear_regression",
+  "sample_size": 10,
+  "estimates": {
+    "Intercept": 41666.66666666664,
+    "education[T.High School]": -4666.6666666666315,
+    "education[T.Master]": 16333.333333333354,
+    "education[T.PhD]": 11833.333333333363
+  },
+  "p_values": {
+    "Intercept": 9.295747585187441e-05,
+    "education[T.High School]": 0.5387283649079351,
+    "education[T.Master]": 0.04347524824529393,
+    "education[T.PhD]": 0.14950386070719965
+  },
+  "model_metrics": {
+    "r_squared": 0.661935286935287,
+    "adj_r_squared": 0.49290293040293054,
+    "f_statistic": 3.916027088036118,
+    "f_pvalue": 0.07295307366205164,
+    "aic": 210.62050744630753,
+    "bic": 211.8308478182837,
+    "n_obs": 10
+  },
+  "diagnostics": [],
+  "warnings": [],
+  "assumptions_checked": [
+    "Linéarité",
+    "Indépendance",
+    "Normalité des résidus",
+    "Homoscédasticité"
+  ],
+  "generated_code": "import pandas as pd\nimport statsmodels.formula.api as smf\n\ndf = pd.read_csv(\"CHEMIN_VERS_VOS_DONNEES.csv\")\nformula = \"income ~ education\"\nmodel = smf.ols(formula, data=df).fit()\nprint(model.summary())\n",
+  "execution_log": [
+    "Modèle OLS ajusté avec succès"
+  ],
+  "software_versions": {
+    "python": "3.11.16",
+    "statsmodels": "0.15.0"
+  },
+  "preprocessing": [
+    {
+      "description": "Ajout automatique d'une constante par statsmodels"
+    }
+  ],
+  "variables": {
+    "income": {
+      "role": "outcome"
+    },
+    "education": {
+      "role": "predictor"
+    }
+  },
+  "project_path": null
+}

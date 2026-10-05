@@ -1,0 +1,64 @@
+{
+  "project_id": "statforge_20261003_113731",
+  "created_at": "2026-10-03T11:37:31.912671+00:00",
+  "dataset_name": "sample_data.csv",
+  "dataset_hash": null,
+  "dataset_rows": 10,
+  "dataset_columns": 5,
+  "research_question": "Quel est l'effet du sexe sur le revenu annuel ??",
+  "proposed_method": "t_test",
+  "outcome_variable": "income",
+  "predictor_variables": [
+    "gender"
+  ],
+  "reference_category": null,
+  "study_design": "comparative",
+  "confidence": "high",
+  "rationale": "La variable outcome 'income' est numérique continue et la variable prédictive 'gender' est binaire (2 groupes). Le test t de Student est la méthode appropriée pour comparer les moyennes de revenu entre les deux groupes de sexe.",
+  "assumptions_to_check": [
+    "Normalité des données dans chaque groupe",
+    "Homogénéité des variances"
+  ],
+  "method": "t_test",
+  "sample_size": 10,
+  "estimates": {
+    "t_statistic": 0.9732177588941522,
+    "mean_a": 51400.0,
+    "mean_b": 44600.0
+  },
+  "p_values": {
+    "t_test": 0.37216900954666815
+  },
+  "model_metrics": {
+    "t_statistic": 0.9732177588941522,
+    "mean_group_a": 51400.0,
+    "mean_group_b": 44600.0,
+    "n_group_a": 5,
+    "n_group_b": 5
+  },
+  "diagnostics": [],
+  "warnings": [],
+  "assumptions_checked": [
+    "Normalité des résidus",
+    "Homogénéité des variances (test de Welch utilisé)"
+  ],
+  "generated_code": "import scipy.stats as stats\na = df.loc[df['gender'] == 'M', 'income'].dropna()\nb = df.loc[df['gender'] == 'F', 'income'].dropna()\nt, p = stats.ttest_ind(a, b, equal_var=False)\n",
+  "execution_log": [
+    "ttest_ind (Welch) executed"
+  ],
+  "software_versions": {
+    "scipy": "1.17.1"
+  },
+  "preprocessing": [],
+  "variables": {
+    "outcome": {
+      "role": "outcome",
+      "name": "income"
+    },
+    "group": {
+      "role": "predictor",
+      "name": "gender"
+    }
+  },
+  "project_path": null
+}

@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "question": "Quel est l'effet de l'âge et du niveau d'éducation sur le revenu annuel ?",
+    "expected_design": "predictive",
+    "expected_method": "linear_regression",
+    "expected_outcome": "income",
+    "expected_predictors": ["age", "education"],
+    "complexity": "medium"
+  },
+  {
+    "id": 2,
+    "question": "Est-ce que le genre influence la probabilité d'obtenir un poste de direction ?",
+    "expected_design": "associative",
+    "expected_method": "logistic_regression",
+    "expected_outcome": "management_position",
+    "expected_predictors": ["gender"],
+    "complexity": "low"
+  },
+  {
+    "id": 3,
+    "question": "Y a-t-il une différence de satisfaction entre les trois groupes de traitement ?",
+    "expected_design": "comparative",
+    "expected_method": "anova",
+    "expected_outcome": "satisfaction_score",
+    "expected_predictors": ["treatment_group"],
+    "complexity": "low"
+  },
+  {
+    "id": 4,
+    "question": "Le tabagisme est-il associé au cancer du poumon ?",
+    "expected_design": "associative",
+    "expected_method": "chi_square",
+    "expected_outcome": "lung_cancer",
+    "expected_predictors": ["smoking_status"],
+    "complexity": "low"
+  },
+  {
+    "id": 5,
+    "question": "Quels facteurs prédisent la réussite à l'examen universitaire ?",
+    "expected_design": "predictive",
+    "expected_method": "logistic_regression",
+    "expected_outcome": "exam_success",
+    "expected_predictors": ["study_hours", "attendance", "previous_gpa"],
+    "complexity": "high"
+  },
+  {
+    "id": 6,
+    "question": "Comparez les scores de test entre les élèves de deux écoles différentes.",
+    "expected_design": "comparative",
+    "expected_method": "t_test",
+    "expected_outcome": "test_score",
+    "expected_predictors": ["school"],
+    "complexity": "low"
+  },
+  {
+    "id": 7,
+    "question": "Quel modèle de régression explique le mieux le prix de l'immobilier en fonction de la surface, du nombre de pièces et de la localisation ?",
+    "expected_design": "predictive",
+    "expected_method": "linear_regression",
+    "expected_outcome": "price",
+    "expected_predictors": ["surface_area", "num_rooms", "location"],
+    "complexity": "high"
+  },
+  {
+    "id": 8,
+    "question": "L'exercice physique régulier réduit-il le risque de diabète de type 2 ?",
+    "expected_design": "associative",
+    "expected_method": "logistic_regression",
+    "expected_outcome": "diabetes_type2",
+    "expected_predictors": ["exercise_frequency"],
+    "complexity": "medium"
+  },
+  {
+    "id": 9,
+    "question": "Analysez la relation entre le statut matrimonial et le niveau de bonheur.",
+    "expected_design": "associative",
+    "expected_method": "chi_square",
+    "expected_outcome": "happiness_level",
+    "expected_predictors": ["marital_status"],
+    "complexity": "medium"
+  },
+  {
+    "id": 10,
+    "question": "Prédisez le choix de transport (voiture, bus, vélo, marche) en fonction de l'âge, du revenu et de la distance domicile-travail.",
+    "expected_design": "predictive",
+    "expected_method": "multinomial_logistic_regression",
+    "expected_outcome": "transport_mode",
+    "expected_predictors": ["age", "income", "commute_distance"],
+    "complexity": "high"
+  },
+  {
+    "id": 11,
+    "question": "Est-ce que la méthode d'enseignement affecte les résultats des étudiants en mathématiques ?",
+    "expected_design": "comparative",
+    "expected_method": "anova",
+    "expected_outcome": "math_score",
+    "expected_predictors": ["teaching_method"],
+    "complexity": "medium"
+  },
+  {
+    "id": 12,
+    "question": "Quel est l'impact du sommeil sur la performance cognitive, en contrôlant pour l'âge et le sexe ?",
+    "expected_design": "predictive",
+    "expected_method": "linear_regression",
+    "expected_outcome": "cognitive_score",
+    "expected_predictors": ["sleep_hours", "age", "gender"],
+    "complexity": "high"
+  },
+  {
+    "id": 13,
+    "question": "Les patients qui suivent le traitement A ont-ils un meilleur taux de guérison que ceux qui suivent le traitement B ?",
+    "expected_design": "comparative",
+    "expected_method": "chi_square",
+    "expected_outcome": "recovery_status",
+    "expected_predictors": ["treatment_type"],
+    "complexity": "low"
+  },
+  {
+    "id": 14,
+    "question": "Quels sont les prédicteurs de l'abandon scolaire précoce ?",
+    "expected_design": "predictive",
+    "expected_method": "logistic_regression",
+    "expected_outcome": "dropout",
+    "expected_predictors": ["family_income", "parental_education", "student_motivation"],
+    "complexity": "high"
+  },
+  {
+    "id": 15,
+    "question": "Comparez la pression artérielle moyenne entre les groupes d'âge (jeunes, adultes, seniors).",
+    "expected_design": "comparative",
+    "expected_method": "anova",
+    "expected_outcome": "blood_pressure",
+    "expected_predictors": ["age_group"],
+    "complexity": "medium"
+  },
+  {
+    "id": 16,
+    "question": "Le régime alimentaire méditerranéen est-il associé à une réduction des maladies cardiovasculaires ?",
+    "expected_design": "associative",
+    "expected_method": "logistic_regression",
+    "expected_outcome": "cardiovascular_disease",
+    "expected_predictors": ["mediterranean_diet"],
+    "complexity": "medium"
+  },
+  {
+    "id": 17,
+    "question": "Prédisez le niveau de satisfaction client (faible, moyen, élevé) en fonction de la qualité du service, du temps d'attente et du prix.",
+    "expected_design": "predictive",
+    "expected_method": "multinomial_logistic_regression",
+    "expected_outcome": "customer_satisfaction",
+    "expected_predictors": ["service_quality", "wait_time", "price"],
+    "complexity": "high"
+  },
+  {
+    "id": 18,
+    "question": "Y a-t-il une différence significative de productivité entre les employés travaillant à distance et ceux travaillant au bureau ?",
+    "expected_design": "comparative",
+    "expected_method": "t_test",
+    "expected_outcome": "productivity_score",
+    "expected_predictors": ["work_location"],
+    "complexity": "low"
+  },
+  {
+    "id": 19,
+    "question": "Analysez les facteurs qui influencent le choix du parti politique (parti A, parti B, parti C, abstention).",
+    "expected_design": "predictive",
+    "expected_method": "multinomial_logistic_regression",
+    "expected_outcome": "political_choice",
+    "expected_predictors": ["age", "education", "income", "region"],
+    "complexity": "high"
+  },
+  {
+    "id": 20,
+    "question": "Quel est l'effet de la publicité sur les ventes, en tenant compte de la saisonnalité ?",
+    "expected_design": "predictive",
+    "expected_method": "linear_regression",
+    "expected_outcome": "sales",
+    "expected_predictors": ["advertising_spend", "season"],
+    "complexity": "medium"
+  }
+]

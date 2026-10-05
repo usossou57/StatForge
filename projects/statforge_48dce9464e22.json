@@ -1,0 +1,73 @@
+{
+  "project_id": "statforge_48dce9464e22",
+  "created_at": "2026-10-03T21:16:54.821108+00:00",
+  "dataset_name": "sample_data.csv",
+  "dataset_hash": null,
+  "dataset_rows": 10,
+  "dataset_columns": 5,
+  "research_question": "Quel  est l'effet de l'âge  sur le revenu annuel ?",
+  "proposed_method": "linear_regression",
+  "outcome_variable": "income",
+  "predictor_variables": [
+    "age"
+  ],
+  "reference_category": null,
+  "study_design": "associative",
+  "confidence": "high",
+  "rationale": "La variable outcome 'income' est numérique continue et la variable prédictive 'age' est également numérique. La régression linéaire est la méthode standard pour quantifier l'effet d'une variable continue sur une autre variable continue.",
+  "assumptions_to_check": [
+    "Linéarité de la relation entre l'âge et le revenu",
+    "Normalité des résidus",
+    "Homoscédasticité (variance constante des résidus)",
+    "Indépendance des observations"
+  ],
+  "method": "linear_regression",
+  "sample_size": 10,
+  "estimates": {
+    "Intercept": -7276.813074565856,
+    "age": 1664.9642492339108
+  },
+  "p_values": {
+    "Intercept": 0.001446458198652978,
+    "age": 3.3222406516748105e-10
+  },
+  "model_metrics": {
+    "r_squared": 0.9940995334253762,
+    "adj_r_squared": 0.9933619751035482,
+    "f_statistic": 1347.8249841471181,
+    "f_pvalue": 3.322240651674822e-10,
+    "aic": 166.1384483693199,
+    "bic": 166.743618555308,
+    "n_obs": 10
+  },
+  "diagnostics": [],
+  "warnings": [],
+  "assumptions_checked": [
+    "Linéarité",
+    "Indépendance",
+    "Normalité des résidus",
+    "Homoscédasticité"
+  ],
+  "generated_code": "import pandas as pd\nimport statsmodels.formula.api as smf\n\ndf = pd.read_csv(\"CHEMIN_VERS_VOS_DONNEES.csv\")\nformula = \"income ~ age\"\nmodel = smf.ols(formula, data=df).fit()\nprint(model.summary())\n",
+  "execution_log": [
+    "Modèle OLS ajusté avec succès"
+  ],
+  "software_versions": {
+    "python": "3.11.16",
+    "statsmodels": "0.15.0"
+  },
+  "preprocessing": [
+    {
+      "description": "Ajout automatique d'une constante par statsmodels"
+    }
+  ],
+  "variables": {
+    "income": {
+      "role": "outcome"
+    },
+    "age": {
+      "role": "predictor"
+    }
+  },
+  "project_path": null
+}
