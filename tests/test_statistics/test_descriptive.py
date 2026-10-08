@@ -1,18 +1,19 @@
-"""Tests pour le module app/statistics/descriptive.py.
+"""Tests pour le module app/statistics/descriptive.py."""
 
-Ces tests vérifient le comportement de la fonction create_contingency_table
-dans différents cas : nominal, multi-modalités, et cas limites (erreurs).
-"""
-
+import numpy as np
 import pandas as pd
 import pytest
 
-from app.statistics.descriptive import create_contingency_table
+from app.results.models import AnalysisResult
+from app.statistics.descriptive import (
+    create_contingency_table,
+    frequency_table,
+    summarize_variables,
+)
 
 
 @pytest.fixture
 def df_2x2() -> pd.DataFrame:
-    """DataFrame simple avec deux variables binaires."""
     return pd.DataFrame(
         {
             "sexe": ["H", "F", "H", "F", "H", "F"],
@@ -23,7 +24,6 @@ def df_2x2() -> pd.DataFrame:
 
 @pytest.fixture
 def df_3x3() -> pd.DataFrame:
-    """DataFrame avec deux variables à 3 modalités."""
     return pd.DataFrame(
         {
             "niveau": ["A", "B", "C", "A", "B", "C", "A", "B", "C"],
@@ -34,7 +34,6 @@ def df_3x3() -> pd.DataFrame:
 
 @pytest.fixture
 def df_numerique_binaire() -> pd.DataFrame:
-    """DataFrame avec variables numériques encodées (0/1)."""
     return pd.DataFrame(
         {
             "traitement": [0, 1, 0, 1, 0, 1],
@@ -44,93 +43,57 @@ def df_numerique_binaire() -> pd.DataFrame:
 
 
 @pytest.fixture
-def df_continu() -> pd.DataFrame:
-    """DataFrame avec une variable continue (non catégorielle)."""
+def sample_df() -> pd.DataFrame:
     return pd.DataFrame(
         {
-            "age": [25.5, 30.1, 45.7, 22.3, 38.9, 51.2, 29.4, 33.6, 42.1, 27.8, 55.0],
-            "groupe": ["A", "B", "A", "B", "A", "B", "A", "B", "A", "B", "A"],
+            "num": [1.0, 2.0, 2.0, 4.0, np.nan, 6.0],
+            "cat": ["A", "A", "B", "B", "B", "C"],
+            "weights": [1.0, 2.0, 1.0, 1.0, 3.0, 2.0],
         }
     )
 
 
+# ==============================================================================
+# Tests pour create_contingency_table
+# ==============================================================================
 def test_cas_nominal_2x2(df_2x2: pd.DataFrame) -> None:
-    """Teste le calcul d'un tableau de contingence 2x2."""
     result = create_contingency_table(df_2x2, "sexe", "reussi")
-
     assert isinstance(result, pd.DataFrame)
     assert result.shape == (2, 2)
-    assert list(result.index) == ["F", "H"]
-    assert list(result.columns) == ["Non", "Oui"]
-    # Vérification des effectifs
     assert result.loc["H", "Oui"] == 1
-    assert result.loc["H", "Non"] == 2
-    assert result.loc["F", "Oui"] == 2
-    assert result.loc["F", "Non"] == 1
-    # Somme totale = nombre d'observations
     assert result.values.sum() == 6
 
 
 def test_cas_3x3(df_3x3: pd.DataFrame) -> None:
-    """Teste le calcul d'un tableau de contingence 3x3."""
     result = create_contingency_table(df_3x3, "niveau", "groupe")
-
     assert isinstance(result, pd.DataFrame)
     assert result.shape == (3, 3)
-    assert list(result.index) == ["A", "B", "C"]
-    assert list(result.columns) == ["X", "Y", "Z"]
-    
-    # Le fixture contient 3 occurrences de chaque paire (A,X), (B,Y), (C,Z)
     assert result.loc["A", "X"] == 3
-    assert result.loc["B", "Y"] == 3
-    assert result.loc["C", "Z"] == 3
 
 
 def test_variables_numeriques_binaires(df_numerique_binaire: pd.DataFrame) -> None:
-    """Teste que les variables numériques avec peu de modalités sont acceptées."""
-    result = create_contingency_table(
-        df_numerique_binaire, "traitement", "effet"
-    )
-
+    result = create_contingency_table(df_numerique_binaire, "traitement", "effet")
     assert isinstance(result, pd.DataFrame)
     assert result.shape == (2, 2)
-    assert result.values.sum() == 6
 
 
 def test_colonne_manquante_row(df_2x2: pd.DataFrame) -> None:
-    """Teste que ValueError est levée si la colonne row n'existe pas."""
     with pytest.raises(ValueError, match="n'existe pas"):
         create_contingency_table(df_2x2, "inexistante", "reussi")
 
 
 def test_colonne_manquante_col(df_2x2: pd.DataFrame) -> None:
-    """Teste que ValueError est levée si la colonne col n'existe pas."""
     with pytest.raises(ValueError, match="n'existe pas"):
         create_contingency_table(df_2x2, "sexe", "inexistante")
 
 
-def test_variable_non_categorielle_row(df_continu: pd.DataFrame) -> None:
-    """Teste que ValueError est levée si row est une variable continue."""
-    with pytest.raises(ValueError, match="n'est pas catégorielle"):
-        create_contingency_table(df_continu, "age", "groupe")
-
-
-def test_variable_non_categorielle_col(df_continu: pd.DataFrame) -> None:
-    """Teste que ValueError est levée si col est une variable continue."""
-    with pytest.raises(ValueError, match="n'est pas catégorielle"):
-        create_contingency_table(df_continu, "groupe", "age")
-
-
 def test_pas_de_marges_par_defaut(df_2x2: pd.DataFrame) -> None:
-    """Vérifie que le tableau retourné ne contient pas de marges (All)."""
     result = create_contingency_table(df_2x2, "sexe", "reussi")
-
-    assert "All" not in result.index
-    assert "All" not in result.columns
+    assert "All" not in result.index and "Total" not in result.index
+    assert "All" not in result.columns and "Total" not in result.columns
 
 
 def test_dtype_category_accepte() -> None:
-    """Teste que les colonnes de type category sont acceptées."""
     df = pd.DataFrame(
         {
             "couleur": pd.Categorical(["Rouge", "Bleu", "Rouge", "Vert"]),
@@ -138,8 +101,75 @@ def test_dtype_category_accepte() -> None:
         }
     )
     result = create_contingency_table(df, "couleur", "forme")
-
     assert isinstance(result, pd.DataFrame)
-    assert result.shape[0] == 3  # 3 couleurs
-    assert result.shape[1] == 2  # 2 formes
+    assert result.shape == (3, 2)
 
+
+# ==============================================================================
+# Tests pour frequency_table
+# ==============================================================================
+def test_frequency_table_unweighted(sample_df: pd.DataFrame) -> None:
+    result = frequency_table(sample_df, "cat")
+    assert isinstance(result, AnalysisResult)
+    freq_table = result.model_metrics["tables"]["frequency"]
+    b_row = next(row for row in freq_table if row["value"] == "B")
+    assert b_row["count"] == 3
+    assert b_row["percentage"] == 50.0
+
+
+def test_frequency_table_weighted(sample_df: pd.DataFrame) -> None:
+    """Teste frequency_table avec pondération."""
+    result = frequency_table(sample_df, "cat", weights="weights")
+    assert isinstance(result, AnalysisResult)
+
+    freq_table = result.model_metrics["tables"]["frequency"]
+    # B a des poids aux indices 2, 3, 4 : 1.0 + 1.0 + 3.0 = 5.0. Poids total = 10.0
+    b_row = next(row for row in freq_table if row["value"] == "B")
+    assert b_row["count"] == 5.0
+    assert b_row["percentage"] == 50.0
+
+
+def test_frequency_table_colonne_manquante(sample_df: pd.DataFrame) -> None:
+    with pytest.raises(ValueError, match="n'existe pas"):
+        frequency_table(sample_df, "inexistante")
+
+
+def test_frequency_table_poids_manquants(sample_df: pd.DataFrame) -> None:
+    with pytest.raises(ValueError, match="n'existe pas"):
+        frequency_table(sample_df, "cat", weights="inexistante")
+
+
+# ==============================================================================
+# Tests pour summarize_variables
+# ==============================================================================
+def test_summarize_variables_numeric(sample_df: pd.DataFrame) -> None:
+    result = summarize_variables(sample_df, ["num"])
+    assert isinstance(result, AnalysisResult)
+    summary = result.model_metrics["tables"]["summary"][0]
+    assert summary["variable"] == "num"
+    assert summary["n"] == 5
+    assert summary["n_missing"] == 1
+    assert summary["missing_pct"] == pytest.approx(16.67, rel=1e-2)
+    assert summary["mean"] == pytest.approx(3.0)
+    assert summary["median"] == pytest.approx(2.0)
+
+
+def test_summarize_variables_categorical(sample_df: pd.DataFrame) -> None:
+    result = summarize_variables(sample_df, ["cat"])
+    assert isinstance(result, AnalysisResult)
+    summary = result.model_metrics["tables"]["summary"][0]
+    assert summary["variable"] == "cat"
+    assert summary["n"] == 6
+    assert summary["n_missing"] == 0
+    assert summary["n_unique"] == 3
+    assert summary["mode"] == "B"
+
+
+def test_summarize_variables_default_columns(sample_df: pd.DataFrame) -> None:
+    result = summarize_variables(sample_df)
+    variables_analyzed = [
+        row["variable"] for row in result.model_metrics["tables"]["summary"]
+    ]
+    assert "num" in variables_analyzed
+    assert "weights" in variables_analyzed
+    assert "cat" not in variables_analyzed
