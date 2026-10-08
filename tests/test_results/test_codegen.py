@@ -115,12 +115,11 @@ def test_generate_anova_code(sample_dataset: Path) -> None:
 
 
 def test_unsupported_method_raises_error() -> None:
-    """Teste qu'une méthode non supportée lève une ValueError."""
+    """Teste qu'une méthode non supportée lève une KeyError."""
     params = {"dataset_path": "dummy.csv"}
-    
-    with pytest.raises(ValueError, match="non supportée"):
-        generate_reproducible_code("unknown_method", params)
 
+    with pytest.raises(KeyError, match="non enregistrée"):
+        generate_reproducible_code("unknown_method", params)
 
 def test_missing_required_params_raises_error() -> None:
     """Teste que des paramètres manquants lèvent une ValueError."""
