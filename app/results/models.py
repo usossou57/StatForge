@@ -1,9 +1,7 @@
 """Modèles pour les résultats d'analyses statistiques.
-
 Ce module définit la structure AnalysisResult, objet central représentant
 le résultat complet d'une analyse statistique.
 """
-
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import json
@@ -32,10 +30,10 @@ class AnalysisResult:
     execution_log: list[str]
     software_versions: dict
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    project_id: str | None = None  # ← AJOUT : lien vers le projet sauvegardé
 
     def to_json(self) -> str:
         """Convertit l'AnalysisResult en chaîne JSON.
-
         Returns:
             Représentation JSON de l'objet.
         """
@@ -66,27 +64,7 @@ class AnalysisResult:
             "software_versions": self.software_versions,
             "created_at": self.created_at.isoformat(),
         }
+        if self.project_id is not None:
+            data["project_id"] = self.project_id
+            
         return json.dumps(data, indent=2, ensure_ascii=False)
-
-
-@dataclass
-class AnalysisResult:
-    """Objet structuré unique représentant le résultat d'une analyse."""
-    method: str
-    dataset_id: str
-    variables: dict
-    sample_size: int
-    preprocessing: list[str]
-    estimates: dict
-    standard_errors: dict
-    confidence_intervals: dict
-    p_values: dict
-    model_metrics: dict
-    diagnostics: list[DiagnosticFinding]
-    warnings: list[str]
-    assumptions_checked: list[str]
-    generated_code: str
-    execution_log: list[str]
-    software_versions: dict
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    project_id: str | None = None  # ← AJOUT : lien vers le projet sauvegardé
