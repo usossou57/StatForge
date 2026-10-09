@@ -10,7 +10,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
+import pandas as pd
 from jinja2 import Environment, FileSystemLoader
+
+from app.data.models import DataDictionary
 
 if TYPE_CHECKING:
     import matplotlib.figure
@@ -22,7 +25,7 @@ if TYPE_CHECKING:
 _TEMPLATES_DIR = Path(__file__).parent / "templates"
 
 
-def generate_report(result: "AnalysisResult", output_format: str = "html") -> str:
+def generate_report(result: AnalysisResult, output_format: str = "html") -> str:
     """Génère un rapport d'analyse au format demandé.
 
     Args:
@@ -47,7 +50,7 @@ def generate_report(result: "AnalysisResult", output_format: str = "html") -> st
         return _generate_markdown_report(result)
 
 
-def _generate_html_report(result: "AnalysisResult") -> str:
+def _generate_html_report(result: AnalysisResult) -> str:
     """Génère un rapport HTML via Jinja2.
 
     Args:
@@ -90,7 +93,7 @@ def _generate_html_report(result: "AnalysisResult") -> str:
     )
 
 
-def _generate_markdown_report(result: "AnalysisResult") -> str:
+def _generate_markdown_report(result: AnalysisResult) -> str:
     """Génère un rapport Markdown.
 
     Args:
@@ -127,12 +130,14 @@ def _generate_markdown_report(result: "AnalysisResult") -> str:
     # Tableau des coefficients
     coefficients_data = _prepare_coefficients_table(result)
     if coefficients_data:
-        lines.extend([
-            "## Coefficients",
-            "",
-            "| Variable | Estimate | SE | IC 95% | p-value |",
-            "|----------|----------|----|----|---------|",
-        ])
+        lines.extend(
+            [
+                "## Coefficients",
+                "",
+                "| Variable | Estimate | SE | IC 95% | p-value |",
+                "|----------|----------|----|----|---------|",
+            ]
+        )
         for coef in coefficients_data:
             lines.append(
                 f"| {coef['name']} | {coef['estimate']:.4f} | "
@@ -174,14 +179,16 @@ def _generate_markdown_report(result: "AnalysisResult") -> str:
         lines.append("")
 
     # Code reproductible
-    lines.extend([
-        "## Code reproductible",
-        "",
-        "```python",
-        result.generated_code,
-        "```",
-        "",
-    ])
+    lines.extend(
+        [
+            "## Code reproductible",
+            "",
+            "```python",
+            result.generated_code,
+            "```",
+            "",
+        ]
+    )
 
     # Versions logicielles
     lines.append("## Versions logicielles")
@@ -193,7 +200,7 @@ def _generate_markdown_report(result: "AnalysisResult") -> str:
     return "\n".join(lines)
 
 
-def _prepare_coefficients_table(result: "AnalysisResult") -> list[dict]:
+def _prepare_coefficients_table(result: AnalysisResult) -> list[dict]:
     """Prépare les données pour le tableau des coefficients.
 
     Args:
@@ -203,7 +210,7 @@ def _prepare_coefficients_table(result: "AnalysisResult") -> list[dict]:
         Liste de dictionnaires avec les données des coefficients.
     """
     coefficients = []
-    for var_name in result.estimates.keys():
+    for var_name in result.estimates:
         estimate = result.estimates[var_name]
         se = result.standard_errors.get(var_name, 0.0)
         p_value = result.p_values.get(var_name, 1.0)
@@ -215,21 +222,21 @@ def _prepare_coefficients_table(result: "AnalysisResult") -> list[dict]:
         else:
             ci_lower, ci_upper = 0.0, 0.0
 
-        coefficients.append({
-            "name": var_name,
-            "estimate": estimate,
-            "se": se,
-            "ci_lower": ci_lower,
-            "ci_upper": ci_upper,
-            "p_value": p_value,
-        })
+        coefficients.append(
+            {
+                "name": var_name,
+                "estimate": estimate,
+                "se": se,
+                "ci_lower": ci_lower,
+                "ci_upper": ci_upper,
+                "p_value": p_value,
+            }
+        )
 
     return coefficients
 
 
-def generate_plot(
-    result: "AnalysisResult", kind: str
-) -> "matplotlib.figure.Figure":
+def generate_plot(result: AnalysisResult, kind: str) -> matplotlib.figure.Figure:
     """Génère un graphique d'analyse.
 
     Args:
@@ -257,7 +264,7 @@ def generate_plot(
         )
 
 
-def _generate_coefficients_plot(result: "AnalysisResult") -> "matplotlib.figure.Figure":
+def _generate_coefficients_plot(result: AnalysisResult) -> matplotlib.figure.Figure:
     """Génère un forest plot des coefficients avec intervalles de confiance.
 
     Args:
@@ -272,9 +279,12 @@ def _generate_coefficients_plot(result: "AnalysisResult") -> "matplotlib.figure.
         # Si pas de coefficients, retourne une figure vide avec message
         fig, ax = plt.subplots(figsize=(10, 6))
         ax.text(
-            0.5, 0.5,
+            0.5,
+            0.5,
             "Aucun coefficient disponible pour ce type d'analyse",
-            ha="center", va="center", transform=ax.transAxes,
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
             fontsize=12,
         )
         ax.set_axis_off()
@@ -297,7 +307,8 @@ def _generate_coefficients_plot(result: "AnalysisResult") -> "matplotlib.figure.
 
     # Forest plot
     ax.errorbar(
-        estimates, y_pos,
+        estimates,
+        y_pos,
         xerr=[xerr_lower, xerr_upper],
         fmt="o",
         color="black",
@@ -324,3 +335,263 @@ def _generate_coefficients_plot(result: "AnalysisResult") -> "matplotlib.figure.
     plt.tight_layout()
 
     return fig
+
+
+def generate_eda_report(
+    df: pd.DataFrame,
+    data_dictionary: DataDictionary,
+    output_format: str = "html",
+) -> str:
+    """Génère un rapport EDA (Exploratory Data Analysis) complet."""
+    if output_format not in ("html", "markdown"):
+        raise ValueError(
+            f"Format '{output_format}' non supporté. "
+            "Formats disponibles : 'html', 'markdown'."
+        )
+
+    # Importation locale pour éviter les dépendances circulaires
+    from app.reports.plots_eda import (
+        plot_boxplot,
+        plot_correlation_heatmap,
+        plot_histogram,
+    )
+    from app.statistics.correlation import run_correlation
+    from app.statistics.descriptive import summarize_variables
+    from app.statistics.normality_outliers import detect_outliers, run_normality_tests
+
+    # 1. Profil du dataset
+    profile = {
+        "n_rows": len(df),
+        "n_columns": len(df.columns),
+        "columns": list(df.columns),
+        "dtypes": {col: str(df[col].dtype) for col in df.columns},
+    }
+
+    # 2. Taux de manquants
+    missing_info = {}
+    for col in df.columns:
+        n_missing = int(df[col].isna().sum())
+        pct_missing = (n_missing / len(df) * 100) if len(df) > 0 else 0.0
+        missing_info[col] = {
+            "n_missing": n_missing,
+            "pct_missing": round(pct_missing, 2),
+        }
+
+    # 3. Résumés descriptifs
+    numeric_cols = df.select_dtypes(include=["number", "bool"]).columns.tolist()
+    categorical_cols = df.select_dtypes(include=["object", "category", "string"]).columns.tolist()
+
+    summary_result = summarize_variables(df) if (numeric_cols or categorical_cols) else None
+    summary_data = summary_result.model_metrics["tables"]["summary"] if summary_result else []
+
+    # 4. Corrélations (uniquement si au moins 2 variables numériques)
+    correlation_result = None
+    correlation_plot_base64 = None
+    if len(numeric_cols) >= 2:
+        cols_to_corr = numeric_cols[:10]
+        correlation_result = run_correlation(df, cols_to_corr)
+        corr_fig = plot_correlation_heatmap(df, cols_to_corr)
+        correlation_plot_base64 = _fig_to_base64(corr_fig)
+
+    # 5. Tests de normalité et outliers
+    normality_results = []
+    outlier_results = []
+    for col in numeric_cols[:5]:
+        try:
+            norm_result = run_normality_tests(df, col)
+            normality_results.append({
+                "column": col,
+                "is_normal": norm_result.model_metrics["is_normal"],
+                "p_values": norm_result.p_values,
+            })
+        except Exception:  # noqa: BLE001, S110
+            pass
+
+        try:
+            outlier_result = detect_outliers(df, [col], method="iqr")
+            outlier_results.append({
+                "column": col,
+                "n_outliers": outlier_result.estimates["n_outliers"],
+            })
+        except Exception:  # noqa: BLE001, S110
+            pass
+
+    # 6. Graphiques (histogrammes)
+    histogram_plots = {}
+    for col in numeric_cols[:5]:
+        try:
+            fig = plot_histogram(df, col)
+            histogram_plots[col] = _fig_to_base64(fig)
+        except Exception:  # noqa: BLE001, S110
+            pass
+
+    # 7. Boxplots
+    boxplot_plots = {}
+    if categorical_cols and numeric_cols:
+        for cat_col in categorical_cols[:2]:
+            for num_col in numeric_cols[:2]:
+                try:
+                    fig = plot_boxplot(df, x=cat_col, y=num_col)
+                    key = f"{num_col}_by_{cat_col}"
+                    boxplot_plots[key] = _fig_to_base64(fig)
+                except Exception:  # noqa: BLE001, S110
+                    pass
+
+    # Préparation des données pour le template
+    eda_data = {
+        "dataset_name": data_dictionary.dataset_name,
+        "profile": profile,
+        "missing_info": missing_info,
+        "summary_data": summary_data,
+        "correlation_result": correlation_result,
+        "correlation_plot": correlation_plot_base64,
+        "normality_results": normality_results,
+        "outlier_results": outlier_results,
+        "histogram_plots": histogram_plots,
+        "boxplot_plots": boxplot_plots,
+    }
+
+    if output_format == "html":
+        return _generate_eda_html_report(eda_data)
+    else:
+        return _generate_eda_markdown_report(eda_data)
+
+
+def _fig_to_base64(fig: matplotlib.figure.Figure) -> str:
+    """Convertit une figure matplotlib en chaîne base64 (format PNG)."""
+    import base64
+    import io
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", bbox_inches="tight", dpi=150)
+    buf.seek(0)
+    img_base64 = base64.b64encode(buf.read()).decode("utf-8")
+    plt.close(fig)
+    return f"data:image/png;base64,{img_base64}"
+
+
+def _generate_eda_html_report(eda_data: dict) -> str:
+    """Génère un rapport EDA HTML via Jinja2."""
+    env = Environment(
+        loader=FileSystemLoader(_TEMPLATES_DIR),
+        autoescape=True,
+    )
+    template = env.get_template("eda_report.html.j2")
+    return template.render(**eda_data)
+
+
+def _generate_eda_markdown_report(eda_data: dict) -> str:
+    """Génère un rapport EDA Markdown."""
+    lines = [
+        f"# Rapport EDA — {eda_data['dataset_name']}",
+        "",
+        "## Profil du dataset",
+        "",
+        f"- **Nombre de lignes :** {eda_data['profile']['n_rows']}",
+        f"- **Nombre de colonnes :** {eda_data['profile']['n_columns']}",
+        "",
+        "### Types de données",
+        "",
+    ]
+
+    for col, dtype in eda_data["profile"]["dtypes"].items():
+        lines.append(f"- **{col}** : {dtype}")
+    lines.append("")
+
+    # Manquants
+    lines.extend(
+        [
+            "## Valeurs manquantes",
+            "",
+            "| Colonne | Nb manquants | % manquants |",
+            "|---------|--------------|-------------|",
+        ]
+    )
+    for col, info in eda_data["missing_info"].items():
+        lines.append(f"| {col} | {info['n_missing']} | {info['pct_missing']:.2f}% |")
+    lines.append("")
+
+    # Résumé descriptif
+    if eda_data["summary_data"]:
+        lines.extend(
+            [
+                "## Résumé descriptif",
+                "",
+            ]
+        )
+        for summary in eda_data["summary_data"]:
+            lines.append(f"### {summary['variable']}")
+            lines.append("")
+            for key, value in summary.items():
+                if key != "variable":
+                    lines.append(f"- **{key}** : {value}")
+            lines.append("")
+
+    # Corrélations
+    if eda_data["correlation_result"]:
+        lines.extend(
+            [
+                "## Corrélations",
+                "",
+            ]
+        )
+        if eda_data["correlation_plot"]:
+            lines.append(f"![Heatmap de corrélation]({eda_data['correlation_plot']})")
+            lines.append("")
+
+    # Normalité
+    if eda_data["normality_results"]:
+        lines.extend(
+            [
+                "## Tests de normalité",
+                "",
+            ]
+        )
+        for norm in eda_data["normality_results"]:
+            status = "✅ Normale" if norm["is_normal"] else "❌ Non normale"
+            lines.append(f"- **{norm['column']}** : {status}")
+        lines.append("")
+
+    # Outliers
+    if eda_data["outlier_results"]:
+        lines.extend(
+            [
+                "## Détection d'outliers (IQR)",
+                "",
+            ]
+        )
+        for outlier in eda_data["outlier_results"]:
+            lines.append(
+                f"- **{outlier['column']}** : {outlier['n_outliers']} outlier(s)"
+            )
+        lines.append("")
+
+    # Histogrammes
+    if eda_data["histogram_plots"]:
+        lines.extend(
+            [
+                "## Distributions",
+                "",
+            ]
+        )
+        for col, img_base64 in eda_data["histogram_plots"].items():
+            lines.append(f"### {col}")
+            lines.append("")
+            lines.append(f"![Histogramme de {col}]({img_base64})")
+            lines.append("")
+
+    # Boxplots
+    if eda_data["boxplot_plots"]:
+        lines.extend(
+            [
+                "## Boxplots",
+                "",
+            ]
+        )
+        for key, img_base64 in eda_data["boxplot_plots"].items():
+            lines.append(f"### {key}")
+            lines.append("")
+            lines.append(f"![Boxplot {key}]({img_base64})")
+            lines.append("")
+
+    return "\n".join(lines)
