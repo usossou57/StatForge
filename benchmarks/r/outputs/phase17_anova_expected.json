@@ -1,0 +1,49 @@
+{
+  "welch_anova": {
+    "F": 41.24451,
+    "df1": 2.0,
+    "df2": 8.0,
+    "p": 6.167209e-05
+  },
+  "ancova": {
+    "group_F": 53.3252,
+    "group_p": 2.184721e-06,
+    "covariate_F": 88.5635,
+    "covariate_p": 3.938e-13
+  },
+  "manova": {
+    "pillai": 0.939727,
+    "F": 5.31784,
+    "num_df": 4.0,
+    "den_df": 22.0,
+    "p": 0.0032712
+  },
+  "tukey": [
+    {
+      "group1": "B",
+      "group2": "A",
+      "mean_diff": 2.04,
+      "p_adj": 0.001091122
+    },
+    {
+      "group1": "C",
+      "group2": "A",
+      "mean_diff": 4.04,
+      "p_adj": 1.580476e-06
+    },
+    {
+      "group1": "C",
+      "group2": "B",
+      "mean_diff": 2.0,
+      "p_adj": 0.001279951
+    }
+  ],
+  "repeated_measures_anova": {
+    "F": 437.2794117647152,
+    "p": 1.846573e-10,
+    "epsilon": 0.733386,
+    "p_gg": 1.846573e-10,
+    "mauchly_W": null,
+    "mauchly_p": null
+  }
+}
