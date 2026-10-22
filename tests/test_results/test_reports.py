@@ -1,6 +1,6 @@
 """Tests pour la génération de rapports et graphiques."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -49,7 +49,7 @@ def sample_analysis_result() -> AnalysisResult:
         generated_code="import pandas as pd\n# Code reproductible ici",
         execution_log=["Analyse démarrée", "Analyse terminée"],
         software_versions={"python": "3.11.0", "pandas": "2.0.0"},
-        created_at=datetime(2026, 9, 22, 10, 0, 0, tzinfo=timezone.utc),
+        created_at=datetime(2026, 9, 22, 10, 0, 0, tzinfo=UTC),
     )
 
 

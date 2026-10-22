@@ -63,8 +63,8 @@ def test_transform_log_rejoue_6_transformations() -> None:
     df_manual["sexe"] = df_manual["sexe"].map({1: "Homme", 2: "Femme"})
     df_manual["age_centre"] = df_manual["age"] - df_manual["age"].mean()
     df_manual["score_std"] = (
-        (df_manual["score"] - df_manual["score"].mean()) / df_manual["score"].std()
-    )
+        df_manual["score"] - df_manual["score"].mean()
+    ) / df_manual["score"].std()
     df_manual["age_sup_50"] = (df_manual["age"] > 50).astype(int)
     df_manual = df_manual.drop(columns=["groupe"])
     df_manual = df_manual.sort_values("age").reset_index(drop=True)
@@ -187,10 +187,9 @@ def test_roundtrip_stata(tmp_path: Path, roundtrip_df: pd.DataFrame) -> None:
     path = str(tmp_path / "test.dta")
     export_stata(df_numeric, path)
     import pyreadstat
+
     df_loaded, _meta = pyreadstat.read_dta(path)
-    pd.testing.assert_frame_equal(
-        df_loaded, df_numeric, check_dtype=False
-    )
+    pd.testing.assert_frame_equal(df_loaded, df_numeric, check_dtype=False)
 
 
 # ============================================================================
@@ -223,8 +222,7 @@ def test_import_chunked_500k_sous_4go(tmp_path: Path) -> None:
     # Vérifier la mémoire
     report = memory_report(df_imported)
     assert report["total_memory_gb"] < 4.0, (
-        f"Mémoire utilisée : {report['total_memory_gb']:.2f} Go "
-        f"(limite : 4 Go, T22)"
+        f"Mémoire utilisée : {report['total_memory_gb']:.2f} Go (limite : 4 Go, T22)"
     )
 
 
@@ -235,12 +233,8 @@ def test_import_chunked_500k_sous_4go(tmp_path: Path) -> None:
 
 def test_merge_avec_cles_dupliquees() -> None:
     """Test de fusion avec détection de clés dupliquées."""
-    df_left = pd.DataFrame(
-        {"id": [1, 1, 2, 3], "val_l": ["a", "b", "c", "d"]}
-    )
-    df_right = pd.DataFrame(
-        {"id": [1, 2, 2, 3], "val_r": ["x", "y", "z", "w"]}
-    )
+    df_left = pd.DataFrame({"id": [1, 1, 2, 3], "val_l": ["a", "b", "c", "d"]})
+    df_right = pd.DataFrame({"id": [1, 2, 2, 3], "val_r": ["x", "y", "z", "w"]})
     _df_merged, step = merge_datasets(df_left, df_right, on="id", how="inner")
     assert step.params["left_dupes"] == 1
     assert step.params["right_dupes"] == 1

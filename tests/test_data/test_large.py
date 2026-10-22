@@ -69,7 +69,9 @@ def test_import_csv_chunked_usecols(tmp_path) -> None:
     df_orig.to_csv(csv_path, index=False)
 
     # Importer seulement id et col1
-    df_imported = import_csv_chunked(str(csv_path), chunksize=200, usecols=["id", "col1"])
+    df_imported = import_csv_chunked(
+        str(csv_path), chunksize=200, usecols=["id", "col1"]
+    )
 
     assert len(df_imported) == 500
     assert list(df_imported.columns) == ["id", "col1"]

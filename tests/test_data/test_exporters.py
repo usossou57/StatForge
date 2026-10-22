@@ -64,7 +64,7 @@ def test_export_stata_cas_nominal(tmp_path: Path, sample_df: pd.DataFrame) -> No
     labels = {"id": {1: "Un", 2: "Deux", 3: "Trois"}}
     export_stata(sample_df, str(path), labels=labels)
     assert path.exists()
-    
+
     df_read, meta = pyreadstat.read_dta(path)
     # pyreadstat peut modifier légèrement les types, on vérifie les valeurs
     assert df_read.shape == sample_df.shape
@@ -105,7 +105,9 @@ def test_export_html_cas_nominal(tmp_path: Path, sample_df: pd.DataFrame) -> Non
     assert 'class="dataframe' in content
 
 
-def test_export_creates_parent_directory(tmp_path: Path, sample_df: pd.DataFrame) -> None:
+def test_export_creates_parent_directory(
+    tmp_path: Path, sample_df: pd.DataFrame
+) -> None:
     """Test que la fonction crée le répertoire parent s'il n'existe pas."""
     path = tmp_path / "nouveau_dossier" / "sous_dossier" / "export.csv"
     assert not path.parent.exists()

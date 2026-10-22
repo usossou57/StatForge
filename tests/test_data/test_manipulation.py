@@ -110,9 +110,7 @@ def test_merge_cles_dupliquees() -> None:
     assert len(step.params["warnings"]) > 0
 
 
-def test_merge_how_invalide(
-    df_left: pd.DataFrame, df_right: pd.DataFrame
-) -> None:
+def test_merge_how_invalide(df_left: pd.DataFrame, df_right: pd.DataFrame) -> None:
     """Test de fusion avec un type de jointure invalide."""
     with pytest.raises(InvalidMethodInputError, match="invalide"):
         merge_datasets(df_left, df_right, on="id", how="cross")
@@ -168,9 +166,7 @@ def test_pivot_longer_cas_nominal(df_wide: pd.DataFrame) -> None:
 
 def test_pivot_wider_cas_nominal(df_long: pd.DataFrame) -> None:
     """Test de pivot large."""
-    df_wide, step = pivot_wider(
-        df_long, index="id", columns="temps", values="score"
-    )
+    df_wide, step = pivot_wider(df_long, index="id", columns="temps", values="score")
     assert len(df_wide) == 3
     assert step.operation == "pivot_wider"
 
@@ -195,9 +191,7 @@ def test_transpose_cas_nominal() -> None:
 
 def test_drop_duplicates_cas_nominal() -> None:
     """Test de dédoublonnage."""
-    df = pd.DataFrame(
-        {"id": [1, 1, 2, 2, 3], "val": ["a", "a", "b", "c", "d"]}
-    )
+    df = pd.DataFrame({"id": [1, 1, 2, 2, 3], "val": ["a", "a", "b", "c", "d"]})
     df_dedup, step = drop_duplicates(df, subset=["id", "val"])
     assert len(df_dedup) == 4
     assert step.params["n_removed"] == 1

@@ -23,10 +23,9 @@ Contraintes respectées :
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-
 
 # ──────────────────────────────────────────────────────────────────────
 # Constantes
@@ -38,6 +37,7 @@ HISTORY_FILENAME = "history.jsonl"
 # ──────────────────────────────────────────────────────────────────────
 # Fonctions publiques
 # ──────────────────────────────────────────────────────────────────────
+
 
 def append_to_history(
     project_dir: str,
@@ -83,7 +83,7 @@ def append_to_history(
 
     entry = {
         "project_id": project_id,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "research_question": research_question,
         "method": method,
         "dataset_name": dataset_name,

@@ -10,9 +10,8 @@ import pandas as pd
 
 from app.results.models import AnalysisResult
 from app.statistics.provider import StatisticalEngineProvider
-from app.statistics.descriptive import create_contingency_table
-from app.statistics.tests_classiques import run_chi_square, run_t_test, run_anova
 from app.statistics.regression import run_linear_regression, run_logistic_regression
+from app.statistics.tests_classiques import run_anova, run_chi_square, run_t_test
 
 
 class PythonStatisticalEngine(StatisticalEngineProvider):
@@ -43,20 +42,14 @@ class PythonStatisticalEngine(StatisticalEngineProvider):
             reference_category=reference_category,
         )
 
-    def run_chi_square(
-        self, df: pd.DataFrame, var1: str, var2: str
-    ) -> AnalysisResult:
+    def run_chi_square(self, df: pd.DataFrame, var1: str, var2: str) -> AnalysisResult:
         """Test du chi-carré d'indépendance."""
         return run_chi_square(df=df, var1=var1, var2=var2)
 
-    def run_t_test(
-        self, df: pd.DataFrame, outcome: str, group: str
-    ) -> AnalysisResult:
+    def run_t_test(self, df: pd.DataFrame, outcome: str, group: str) -> AnalysisResult:
         """Test t de Student pour 2 groupes."""
         return run_t_test(df=df, outcome=outcome, group=group)
 
-    def run_anova(
-        self, df: pd.DataFrame, outcome: str, group: str
-    ) -> AnalysisResult:
+    def run_anova(self, df: pd.DataFrame, outcome: str, group: str) -> AnalysisResult:
         """Analyse de variance (ANOVA) à un facteur."""
         return run_anova(df=df, outcome=outcome, group=group)

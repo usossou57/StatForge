@@ -54,9 +54,7 @@ def test_groq_provider_complete_mock() -> None:
     mock_response.raise_for_status = MagicMock()
 
     with patch.object(provider._client, "post", return_value=mock_response):
-        response = provider.complete(
-            messages=[{"role": "user", "content": "Bonjour"}]
-        )
+        response = provider.complete(messages=[{"role": "user", "content": "Bonjour"}])
 
     assert response.text == "Bonjour, comment puis-je vous aider ?"
     assert response.tool_calls is None
@@ -121,9 +119,9 @@ def test_ollama_provider_complete_mock() -> None:
     mock_response.raise_for_status = MagicMock()
 
     with patch.object(provider._client, "post", return_value=mock_response):
-        response = provider.complete(
-            messages=[{"role": "user", "content": "Bonjour"}]
-        )
+        response = provider.complete(messages=[{"role": "user", "content": "Bonjour"}])
 
     assert response.text == "Bonjour depuis Ollama !"
-    assert response.tool_calls is None  # Ollama ne supporte pas nativement le tool calling
+    assert (
+        response.tool_calls is None
+    )  # Ollama ne supporte pas nativement le tool calling

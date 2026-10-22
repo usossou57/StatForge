@@ -44,7 +44,13 @@ def test_recode_values_cas_nominal(sample_df: pd.DataFrame) -> None:
     # Vérifier que l'entrée n'est pas modifiée
     assert sample_df.equals(df_original)
     # Vérifier le résultat
-    assert df_new["groupe"].tolist() == ["Groupe 1", "Groupe 2", "Groupe 1", "Groupe 2", "Groupe 1"]
+    assert df_new["groupe"].tolist() == [
+        "Groupe 1",
+        "Groupe 2",
+        "Groupe 1",
+        "Groupe 2",
+        "Groupe 1",
+    ]
     # Vérifier le TransformStep
     assert step.operation == "recode"
     assert step.params["mapping"] == mapping
@@ -86,7 +92,9 @@ def test_compute_variable_cas_nominal(sample_df: pd.DataFrame) -> None:
 
 def test_compute_variable_expression_complexe(sample_df: pd.DataFrame) -> None:
     """Test de calcul avec une expression complexe."""
-    df_new, _step = compute_variable(sample_df, "score_normalized", "(score - score.mean()) / score.std()")
+    df_new, _step = compute_variable(
+        sample_df, "score_normalized", "(score - score.mean()) / score.std()"
+    )
 
     assert "score_normalized" in df_new.columns
     # Vérifier que la moyenne est proche de 0 et l'écart-type proche de 1

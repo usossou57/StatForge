@@ -16,19 +16,52 @@ from app.data.transform_log import TransformStep
 
 # Liste blanche des opérateurs et fonctions autorisés dans compute_variable
 _ALLOWED_OPERATORS = {
-    "+", "-", "*", "/", "%", "**",
-    "==", "!=", "<", "<=", ">", ">=",
-    "&", "|", "~",
-    "and", "or", "not",
-    "in", "not in",
+    "+",
+    "-",
+    "*",
+    "/",
+    "%",
+    "**",
+    "==",
+    "!=",
+    "<",
+    "<=",
+    ">",
+    ">=",
+    "&",
+    "|",
+    "~",
+    "and",
+    "or",
+    "not",
+    "in",
+    "not in",
 }
 
 _ALLOWED_FUNCTIONS = {
-    "log", "log10", "log2", "exp", "sqrt", "abs",
-    "sin", "cos", "tan", "asin", "acos", "atan",
-    "min", "max", "sum", "mean", "std", "var",
-    "round", "floor", "ceil",
-    "where", "isin",
+    "log",
+    "log10",
+    "log2",
+    "exp",
+    "sqrt",
+    "abs",
+    "sin",
+    "cos",
+    "tan",
+    "asin",
+    "acos",
+    "atan",
+    "min",
+    "max",
+    "sum",
+    "mean",
+    "std",
+    "var",
+    "round",
+    "floor",
+    "ceil",
+    "where",
+    "isin",
 }
 
 
@@ -51,9 +84,20 @@ def _validate_expression(expression: str) -> None:
         if isinstance(node, ast.BinOp):
             op_type = type(node.op).__name__
             if op_type not in {
-                "Add", "Sub", "Mult", "Div", "Mod", "Pow",
-                "Eq", "NotEq", "Lt", "LtE", "Gt", "GtE",
-                "BitAnd", "BitOr",
+                "Add",
+                "Sub",
+                "Mult",
+                "Div",
+                "Mod",
+                "Pow",
+                "Eq",
+                "NotEq",
+                "Lt",
+                "LtE",
+                "Gt",
+                "GtE",
+                "BitAnd",
+                "BitOr",
             }:
                 raise ValueError(
                     f"Opérateur non autorisé dans l'expression : {op_type}"
@@ -62,9 +106,7 @@ def _validate_expression(expression: str) -> None:
         elif isinstance(node, ast.UnaryOp):
             op_type = type(node.op).__name__
             if op_type not in {"UAdd", "USub", "Not", "Invert"}:
-                raise ValueError(
-                    f"Opérateur unaire non autorisé : {op_type}"
-                )
+                raise ValueError(f"Opérateur unaire non autorisé : {op_type}")
         # Appels de fonctions
         elif isinstance(node, ast.Call):
             if isinstance(node.func, ast.Name):
@@ -79,18 +121,50 @@ def _validate_expression(expression: str) -> None:
             for op in node.ops:
                 op_type = type(op).__name__
                 if op_type not in {
-                    "Eq", "NotEq", "Lt", "LtE", "Gt", "GtE", "In", "NotIn"
+                    "Eq",
+                    "NotEq",
+                    "Lt",
+                    "LtE",
+                    "Gt",
+                    "GtE",
+                    "In",
+                    "NotIn",
                 }:
                     raise ValueError(f"Comparaison non autorisée : {op_type}")
         # Nœuds autorisés sans vérification
-        elif isinstance(node, (
-            ast.Expression, ast.Load, ast.Store, ast.Name, ast.Constant,
-            ast.Num, ast.Str, ast.NameConstant, ast.Attribute, ast.Subscript,
-            ast.Index, ast.Slice, ast.Tuple, ast.List, ast.BoolOp,
-        )):
+        elif isinstance(
+            node,
+            (
+                ast.Expression,
+                ast.Load,
+                ast.Store,
+                ast.Name,
+                ast.Constant,
+                ast.Num,
+                ast.Str,
+                ast.NameConstant,
+                ast.Attribute,
+                ast.Subscript,
+                ast.Index,
+                ast.Slice,
+                ast.Tuple,
+                ast.List,
+                ast.BoolOp,
+            ),
+        ):
             pass
         # Tout autre nœud est interdit
-        elif not isinstance(node, (ast.expr_context, ast.expr, ast.operator, ast.cmpop, ast.unaryop, ast.boolop)):
+        elif not isinstance(
+            node,
+            (
+                ast.expr_context,
+                ast.expr,
+                ast.operator,
+                ast.cmpop,
+                ast.unaryop,
+                ast.boolop,
+            ),
+        ):
             # Ignorer les nœuds de contexte
             pass
 
@@ -119,6 +193,7 @@ def _make_step(
         Un TransformStep avec un step_id unique.
     """
     import time
+
     step_id = f"step_{int(time.time() * 1000)}"
     return TransformStep(
         step_id=step_id,
@@ -241,7 +316,10 @@ def standardize(
         std = df_new[col].std()
         df_new[col] = (df_new[col] - mean) / std
 
-    code_lines = [f'df["{col}"] = (df["{col}"] - df["{col}"].mean()) / df["{col}"].std()' for col in columns]
+    code_lines = [
+        f'df["{col}"] = (df["{col}"] - df["{col}"].mean()) / df["{col}"].std()'
+        for col in columns
+    ]
     code = "\n".join(code_lines)
     step = _make_step(
         operation="standardize",
@@ -321,7 +399,9 @@ def discretize(
         raise KeyError(f"La colonne '{column}' n'existe pas dans le DataFrame.")
 
     if strategy not in {"width", "quantile"}:
-        raise ValueError(f"Stratégie non supportée : {strategy}. Utiliser 'width' ou 'quantile'.")
+        raise ValueError(
+            f"Stratégie non supportée : {strategy}. Utiliser 'width' ou 'quantile'."
+        )
 
     df_new = df.copy()
 
@@ -329,7 +409,9 @@ def discretize(
         if strategy == "width":
             df_new[column] = pd.cut(df_new[column], bins=bins, labels=labels)
         else:  # quantile
-            df_new[column] = pd.qcut(df_new[column], q=bins, labels=labels, duplicates="drop")
+            df_new[column] = pd.qcut(
+                df_new[column], q=bins, labels=labels, duplicates="drop"
+            )
     else:  # list[float]
         df_new[column] = pd.cut(df_new[column], bins=bins, labels=labels)
 
@@ -369,7 +451,16 @@ def extract_date_parts(
     if column not in df.columns:
         raise KeyError(f"La colonne '{column}' n'existe pas dans le DataFrame.")
 
-    allowed_parts = {"year", "month", "day", "hour", "minute", "second", "dayofweek", "quarter"}
+    allowed_parts = {
+        "year",
+        "month",
+        "day",
+        "hour",
+        "minute",
+        "second",
+        "dayofweek",
+        "quarter",
+    }
     for part in parts:
         if part not in allowed_parts:
             raise ValueError(

@@ -1,7 +1,5 @@
 """Tests pour le journal d'historique (T11.2)."""
 
-import json
-import tempfile
 from pathlib import Path
 
 import pytest

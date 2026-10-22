@@ -7,16 +7,18 @@ import os
 import re
 import time
 from dataclasses import dataclass, field
+from json import JSONDecodeError
 from typing import Any, Protocol
 
 import httpx
+from pydantic import BaseModel, ValidationError
 
 
 def _extract_json(text: str) -> str:
     """Extrait le JSON d'une chaîne qui peut contenir des blocs de code markdown."""
     if not text:
         return ""
-    match = re.search(r'```(?:json)?\s*(.*?)\s*```', text, re.DOTALL | re.IGNORECASE)
+    match = re.search(r"`(?:json)?\s*(.*?)\s*`", text, re.DOTALL | re.IGNORECASE)
     if match:
         return match.group(1).strip()
     return text.strip()
@@ -25,6 +27,7 @@ def _extract_json(text: str) -> str:
 @dataclass
 class LLMResponse:
     """Résultat d'un appel LLM."""
+
     text: str | None = None
     tool_calls: list[dict[str, Any]] | None = None
     structured_output: Any | None = None
@@ -33,13 +36,13 @@ class LLMResponse:
 
 class LLMProvider(Protocol):
     """Abstraction agnostique du fournisseur LLM."""
+
     def complete(
         self,
         messages: list[dict[str, str]],
         tools: list[dict[str, Any]] | None = None,
-        response_schema: type | None = None,
-    ) -> LLMResponse:
-        ...
+        response_schema: type[BaseModel] | None = None,
+    ) -> LLMResponse: ...
 
 
 class GroqProvider:
@@ -47,21 +50,19 @@ class GroqProvider:
 
     def __init__(
         self,
-        model: str = "qwen/qwen3.8-27b",  # Modèle Qwen stable sur Groq
+        model: str = "qwen/qwen3.8-27b",
         api_key: str | None = None,
         temperature: float = 0.3,
-        max_tokens: int = 500,  # Réduit à 500 pour respecter la limite de 1000 OTPM
+        max_tokens: int = 500,
     ) -> None:
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
-
         self.api_key = api_key or os.environ.get("GROQ_API_KEY")
         if not self.api_key:
             raise ValueError(
                 "Clé API Groq manquante. Définissez la variable d'environnement GROQ_API_KEY."
             )
-
         self._client = httpx.Client(
             base_url="https://api.groq.com/openai/v1",
             headers={
@@ -75,7 +76,7 @@ class GroqProvider:
         self,
         messages: list[dict[str, str]],
         tools: list[dict[str, Any]] | None = None,
-        response_schema: type | None = None,
+        response_schema: type[BaseModel] | None = None,
     ) -> LLMResponse:
         payload: dict[str, Any] = {
             "model": self.model,
@@ -83,11 +84,9 @@ class GroqProvider:
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
         }
-
         if tools:
             payload["tools"] = tools
             payload["tool_choice"] = "auto"
-
         if response_schema:
             payload["response_format"] = {"type": "json_object"}
 
@@ -102,16 +101,23 @@ class GroqProvider:
                     try:
                         error_data = e.response.json()
                         message = error_data.get("error", {}).get("message", "")
-                        # Extrait le temps d'attente : "Please try again in 12.405s."
                         match = re.search(r"try again in ([\d.]+)s", message)
                         if match:
                             wait_time = float(match.group(1)) + 1.0
-                            print(f"\n[DEBUG] Rate limit (429). Attente de {wait_time:.1f}s (tentative {attempt + 1}/{max_retries})...")
+                            print(
+                                f"\n[DEBUG] Rate limit (429). Attente de {wait_time:.1f}s (tentative {attempt + 1}/{max_retries})..."
+                            )
                             time.sleep(wait_time)
                             continue
-                    except Exception:
-                        pass
-                # Si ce n'est pas un 429 ou si on a épuisé les réessais, on lève l'erreur
+                    except (httpx.HTTPError, ValueError, KeyError):
+                        # Si l'extraction du temps d'attente échoue, on utilise un délai par défaut
+                        wait_time = 2.0
+                        print(
+                            f"\n[DEBUG] Rate limit (429). Attente de {wait_time:.1f}s par défaut (tentative {attempt + 1}/{max_retries})..."
+                        )
+                        time.sleep(wait_time)
+                        continue
+
                 print(f"\n[DEBUG GROQ API ERROR] Status: {e.response.status_code}")
                 print(f"[DEBUG GROQ API ERROR] Body: {e.response.text}\n")
                 raise
@@ -121,21 +127,24 @@ class GroqProvider:
         text = choice.get("content")
 
         tool_calls = None
-        if "tool_calls" in choice and choice["tool_calls"]:
+        if choice.get("tool_calls"):
             tool_calls = []
             for tc in choice["tool_calls"]:
-                tool_calls.append({
-                    "id": tc["id"],
-                    "name": tc["function"]["name"],
-                    "arguments": json.loads(tc["function"]["arguments"]),
-                })
+                tool_calls.append(
+                    {
+                        "id": tc["id"],
+                        "name": tc["function"]["name"],
+                        "arguments": json.loads(tc["function"]["arguments"]),
+                    }
+                )
 
         structured_output = None
         if response_schema and text:
             try:
                 clean_text = _extract_json(text)
                 structured_output = response_schema.model_validate_json(clean_text)
-            except Exception:
+            except (JSONDecodeError, ValidationError, AttributeError):
+                # Échec de l'extraction ou de la validation JSON, on ignore et structured_output reste None
                 pass
 
         return LLMResponse(
@@ -148,7 +157,7 @@ class GroqProvider:
 
 class OllamaProvider:
     """Implémentation de LLMProvider utilisant Ollama (local)."""
-    # ... (garder le code OllamaProvider tel qu'il était) ...
+
     def __init__(
         self,
         model: str = "llama3.1:8b",
@@ -163,7 +172,7 @@ class OllamaProvider:
         self,
         messages: list[dict[str, str]],
         tools: list[dict[str, Any]] | None = None,
-        response_schema: type | None = None,
+        response_schema: type[BaseModel] | None = None,
     ) -> LLMResponse:
         payload: dict[str, Any] = {
             "model": self.model,
@@ -184,7 +193,13 @@ class OllamaProvider:
             try:
                 clean_text = _extract_json(text)
                 structured_output = response_schema.model_validate_json(clean_text)
-            except Exception:
+            except (JSONDecodeError, ValidationError, AttributeError):
+                # Échec de l'extraction ou de la validation JSON, on ignore et structured_output reste None
                 pass
 
-        return LLMResponse(text=text, tool_calls=None, structured_output=structured_output, raw_response=data)
+        return LLMResponse(
+            text=text,
+            tool_calls=None,
+            structured_output=structured_output,
+            raw_response=data,
+        )

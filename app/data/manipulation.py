@@ -89,9 +89,7 @@ def merge_datasets(
             f"un produit cartésien partiel."
         )
 
-    df_merged = pd.merge(
-        df_left, df_right, on=on_list, how=how, suffixes=suffixes
-    )
+    df_merged = pd.merge(df_left, df_right, on=on_list, how=how, suffixes=suffixes)
 
     on_str = repr(on)
     code = (
@@ -151,15 +149,9 @@ def aggregate_by(
     df_agg = df.groupby(group_list, as_index=False).agg(agg_dict)
     # Aplatir les colonnes MultiIndex si nécessaire
     if isinstance(df_agg.columns, pd.MultiIndex):
-        df_agg.columns = [
-            f"{col}_{agg}" if agg else col
-            for col, agg in df_agg.columns
-        ]
+        df_agg.columns = [f"{col}_{agg}" if agg else col for col, agg in df_agg.columns]
 
-    code = (
-        f"df = df.groupby({group_list!r}, as_index=False)"
-        f".agg({agg_dict!r})"
-    )
+    code = f"df = df.groupby({group_list!r}, as_index=False).agg({agg_dict!r})"
 
     step = _make_step(
         operation="aggregate",
@@ -228,7 +220,9 @@ def pivot_wider(
     index: str | list[str],
     columns: str,
     values: str,
-    aggfunc: Literal["first", "mean", "sum", "min", "max", "count", "std", "var"] = "first",
+    aggfunc: Literal[
+        "first", "mean", "sum", "min", "max", "count", "std", "var"
+    ] = "first",
 ) -> tuple[pd.DataFrame, TransformStep]:
     """Transforme un DataFrame du format long au format large (pivot).
 
@@ -252,8 +246,7 @@ def pivot_wider(
     # Aplatir les colonnes MultiIndex
     if isinstance(df_wide.columns, pd.MultiIndex):
         df_wide.columns = [
-            f"{col}_{val}" if val else col
-            for col, val in df_wide.columns
+            f"{col}_{val}" if val else col for col, val in df_wide.columns
         ]
 
     code = (
@@ -291,10 +284,7 @@ def transpose_dataset(
         Un tuple (df_transposé, TransformStep).
     """
     df_t = df.T.reset_index()
-    df_t.columns = [
-        f"col_{i}" if i > 0 else "index"
-        for i in range(len(df_t.columns))
-    ]
+    df_t.columns = [f"col_{i}" if i > 0 else "index" for i in range(len(df_t.columns))]
 
     code = "df = df.T.reset_index()"
 
@@ -329,7 +319,7 @@ def drop_duplicates(
     Raises:
         InvalidMethodInputError: Si la valeur de 'keep' est invalide.
     """
-    valid_keep ={"first", "last", False}
+    valid_keep = {"first", "last", False}
     if keep not in valid_keep:
         raise InvalidMethodInputError(
             f"Valeur de 'keep' invalide : {keep!r}. "
@@ -393,15 +383,10 @@ def sample_rows(
             "Fournissez soit 'n', soit 'frac', pas les deux simultanément."
         )
 
-    df_sample = df.sample(
-        n=n, frac=frac, random_state=random_state, replace=replace
-    )
+    df_sample = df.sample(n=n, frac=frac, random_state=random_state, replace=replace)
 
     if n is not None:
-        code = (
-            f"df = df.sample(n={n}, random_state={random_state}, "
-            f"replace={replace})"
-        )
+        code = f"df = df.sample(n={n}, random_state={random_state}, replace={replace})"
     else:
         code = (
             f"df = df.sample(frac={frac}, random_state={random_state}, "

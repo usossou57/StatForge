@@ -2,9 +2,10 @@
 Ce module définit la structure AnalysisResult, objet central représentant
 le résultat complet d'une analyse statistique.
 """
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+
 import json
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 
 from app.diagnostics.models import DiagnosticFinding
 
@@ -13,6 +14,7 @@ from app.diagnostics.models import DiagnosticFinding
 class AnalysisResult:
     """Objet structuré unique représentant le résultat d'une analyse — jamais
     remplacé par un simple tableau affiché à l'écran."""
+
     method: str
     dataset_id: str
     variables: dict
@@ -29,7 +31,7 @@ class AnalysisResult:
     generated_code: str
     execution_log: list[str]
     software_versions: dict
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     project_id: str | None = None  # ← AJOUT : lien vers le projet sauvegardé
 
     def to_json(self) -> str:
@@ -66,5 +68,5 @@ class AnalysisResult:
         }
         if self.project_id is not None:
             data["project_id"] = self.project_id
-            
+
         return json.dumps(data, indent=2, ensure_ascii=False)

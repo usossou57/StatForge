@@ -16,15 +16,16 @@ import statsmodels.formula.api as smf
 
 from app.results.models import AnalysisResult
 
+
 def _safe_var_name(name: str) -> str:
     """Entoure un nom de variable de Q('...') s'il contient des caractères spéciaux.
-    
-    Patsy (statsmodels) exige la syntaxe Q('nom') pour les identifiants 
+
+    Patsy (statsmodels) exige la syntaxe Q('nom') pour les identifiants
     contenant des espaces ou caractères spéciaux.
-    
+
     Args:
         name: Nom de la variable.
-    
+
     Returns:
         Nom sécurisé pour Patsy (avec Q() si nécessaire).
     """
@@ -53,8 +54,10 @@ def run_linear_regression(
         AnalysisResult contenant les estimations, erreurs standards, etc.
     """
     if df is None:
-        raise ValueError("L'exécution de cette fonction nécessite un DataFrame (df) valide.")
-        
+        raise ValueError(
+            "L'exécution de cette fonction nécessite un DataFrame (df) valide."
+        )
+
     if outcome not in df.columns:
         raise ValueError(f"La variable '{outcome}' n'existe pas dans le DataFrame.")
     # ... suite du code
@@ -101,7 +104,10 @@ print(model.summary())
     return AnalysisResult(
         method="linear_regression",
         dataset_id="in_memory",
-        variables={outcome: {"role": "outcome"}, **{p: {"role": "predictor"} for p in predictors}},
+        variables={
+            outcome: {"role": "outcome"},
+            **{p: {"role": "predictor"} for p in predictors},
+        },
         sample_size=int(model.nobs),
         preprocessing=["Ajout automatique d'une constante par statsmodels"],
         estimates=estimates,
@@ -111,10 +117,18 @@ print(model.summary())
         model_metrics=model_metrics,
         diagnostics=[],
         warnings=[],
-        assumptions_checked=["Linéarité", "Indépendance", "Normalité des résidus", "Homoscédasticité"],
+        assumptions_checked=[
+            "Linéarité",
+            "Indépendance",
+            "Normalité des résidus",
+            "Homoscédasticité",
+        ],
         generated_code=generated_code,
         execution_log=["Modèle OLS ajusté avec succès"],
-        software_versions={"python": platform.python_version(), "statsmodels": sm.__version__},
+        software_versions={
+            "python": platform.python_version(),
+            "statsmodels": sm.__version__,
+        },
     )
 
 
@@ -140,12 +154,13 @@ def run_logistic_regression(
         AnalysisResult contenant les estimations, erreurs standards, odds ratios, etc.
     """
     if df is None:
-        raise ValueError("L'exécution de cette fonction nécessite un DataFrame (df) valide.")
-        
+        raise ValueError(
+            "L'exécution de cette fonction nécessite un DataFrame (df) valide."
+        )
+
     if outcome not in df.columns:
         raise ValueError(f"La variable '{outcome}' n'existe pas dans le DataFrame.")
     # ... suite du code
-
 
     # Construction de la formule
     predictors_formula = " + ".join(_safe_var_name(p) for p in predictors)
@@ -193,7 +208,10 @@ print(np.exp(model.params))
     return AnalysisResult(
         method="logistic_regression",
         dataset_id="in_memory",
-        variables={outcome: {"role": "outcome"}, **{p: {"role": "predictor"} for p in predictors}},
+        variables={
+            outcome: {"role": "outcome"},
+            **{p: {"role": "predictor"} for p in predictors},
+        },
         sample_size=int(model.nobs),
         preprocessing=["Encodage automatique des catégories par statsmodels"],
         estimates=estimates,
@@ -203,11 +221,19 @@ print(np.exp(model.params))
         model_metrics=model_metrics,
         diagnostics=[],
         warnings=[],
-        assumptions_checked=["Indépendance des observations", "Linéarité des log-odds", "Absence de multicolinéarité"],
+        assumptions_checked=[
+            "Indépendance des observations",
+            "Linéarité des log-odds",
+            "Absence de multicolinéarité",
+        ],
         generated_code=generated_code,
         execution_log=["Modèle Logit ajusté avec succès"],
-        software_versions={"python": platform.python_version(), "statsmodels": sm.__version__},
+        software_versions={
+            "python": platform.python_version(),
+            "statsmodels": sm.__version__,
+        },
     )
+
 
 def run_multinomial_logistic_regression(
     df: pd.DataFrame,
@@ -232,8 +258,10 @@ def run_multinomial_logistic_regression(
         ValueError: Si outcome a moins de 3 modalités.
     """
     if df is None:
-        raise ValueError("L'exécution de cette fonction nécessite un DataFrame (df) valide.")
-        
+        raise ValueError(
+            "L'exécution de cette fonction nécessite un DataFrame (df) valide."
+        )
+
     if outcome not in df.columns:
         raise ValueError(f"La variable '{outcome}' n'existe pas dans le DataFrame.")
     # ... suite du code
@@ -282,9 +310,7 @@ def run_multinomial_logistic_regression(
         else:
             # Variable non-numérique (string, cat, bool, object...) : dummies
             # dtype=float garantit que les colonnes résultantes sont numériques
-            dummies = pd.get_dummies(
-                col, prefix=pred, drop_first=False, dtype=float
-            )
+            dummies = pd.get_dummies(col, prefix=pred, drop_first=False, dtype=float)
             dummies.columns = [str(c) for c in dummies.columns]
             X_parts.append(dummies)
             feature_names.extend([str(c) for c in dummies.columns])
@@ -302,7 +328,9 @@ def run_multinomial_logistic_regression(
     p_values = {}
     confidence_intervals = {}
 
-    conf_int_df = model.conf_int()  # DataFrame avec MultiIndex colonnes: (category, 'lower'/'upper')
+    conf_int_df = (
+        model.conf_int()
+    )  # DataFrame avec MultiIndex colonnes: (category, 'lower'/'upper')
 
     for category in model.params.columns:
         cat_label = (
@@ -313,7 +341,7 @@ def run_multinomial_logistic_regression(
             estimates[coef_name] = float(model.params.loc[feature, category])
             standard_errors[coef_name] = float(model.bse.loc[feature, category])
             p_values[coef_name] = float(model.pvalues.loc[feature, category])
-            
+
             # ── CORRECTION : gestion du MultiIndex pour conf_int ─────────
             try:
                 ci_series = conf_int_df.loc[feature, category]
@@ -322,9 +350,13 @@ def run_multinomial_logistic_regression(
                 ci_upper = float(ci_series.iloc[1])
             except (KeyError, TypeError):
                 # Fallback si la structure est différente
-                ci_lower = float(model.params.loc[feature, category]) - 1.96 * float(model.bse.loc[feature, category])
-                ci_upper = float(model.params.loc[feature, category]) + 1.96 * float(model.bse.loc[feature, category])
-            
+                ci_lower = float(model.params.loc[feature, category]) - 1.96 * float(
+                    model.bse.loc[feature, category]
+                )
+                ci_upper = float(model.params.loc[feature, category]) + 1.96 * float(
+                    model.bse.loc[feature, category]
+                )
+
             confidence_intervals[coef_name] = (ci_lower, ci_upper)
 
     # ── Métriques du modèle ─────────────────────────────────────────────
@@ -381,6 +413,7 @@ def run_multinomial_logistic_regression(
         software_versions={"statsmodels": statsmodels.__version__},
     )
 
+
 def compare_models(results: list[AnalysisResult]) -> dict:
     """Compare les métriques de plusieurs modèles de même famille.
 
@@ -388,7 +421,7 @@ def compare_models(results: list[AnalysisResult]) -> dict:
         results: Liste d'objets AnalysisResult (ex: plusieurs régressions logistiques).
 
     Returns:
-        Un dictionnaire structuré contenant un tableau comparatif des métriques 
+        Un dictionnaire structuré contenant un tableau comparatif des métriques
         (AIC, BIC, Log-Likelihood, n_obs) et l'index du meilleur modèle (AIC le plus bas).
     """
     if not results:
@@ -404,15 +437,17 @@ def compare_models(results: list[AnalysisResult]) -> dict:
 
     comparison_data = []
     for i, res in enumerate(results):
-        comparison_data.append({
-            "model_id": f"Modèle {i+1}",
-            "method": res.method,
-            "n_obs": res.model_metrics.get("n_obs", res.sample_size),
-            "log_likelihood": res.model_metrics.get("log_likelihood"),
-            "aic": res.model_metrics.get("aic"),
-            "bic": res.model_metrics.get("bic"),
-            "is_best": False,
-        })
+        comparison_data.append(
+            {
+                "model_id": f"Modèle {i + 1}",
+                "method": res.method,
+                "n_obs": res.model_metrics.get("n_obs", res.sample_size),
+                "log_likelihood": res.model_metrics.get("log_likelihood"),
+                "aic": res.model_metrics.get("aic"),
+                "bic": res.model_metrics.get("bic"),
+                "is_best": False,
+            }
+        )
 
     # Identifier le meilleur modèle selon l'AIC (le plus bas gagne)
     valid_aic_models = [
@@ -423,7 +458,7 @@ def compare_models(results: list[AnalysisResult]) -> dict:
         comparison_data[best_model_idx]["is_best"] = True
 
     return {
-        "family": list(methods)[0],
+        "family": next(iter(methods)),
         "n_models": len(results),
         "comparison_table": comparison_data,
     }
@@ -435,7 +470,7 @@ def run_firth_logistic(
     """Estime un modèle de régression logistique de Firth (correction de séparation).
 
     Tente d'abord d'utiliser le package Python 'firthlogist'. En cas d'échec
-    (non installé ou erreur de résolution), utilise le pont R (logistf) comme 
+    (non installé ou erreur de résolution), utilise le pont R (logistf) comme
     repli robuste et transparent.
 
     Args:
@@ -464,14 +499,16 @@ def run_firth_logistic(
         model = firthlogist.FirthLogisticRegression().fit(X, y)
 
         estimates = {"const": float(model.intercept_)}
-        estimates.update({pred: float(coef) for pred, coef in zip(predictors, model.coef_[0])})
+        estimates.update(
+            {pred: float(coef) for pred, coef in zip(predictors, model.coef_[0])}
+        )
 
         # Note: firthlogist ne fournit pas toujours SE/p-values directement de façon standardisée,
         # on bascule donc prudemment sur R pour une exactitude garantie (T11).
         use_r_bridge = True
         firth_warning = "Package 'firthlogist' détecté, mais bascule vers le moteur R pour garantir l'exactitude des p-values et IC."
 
-    except (ImportError, Exception) as e:
+    except (ImportError, Exception) as e:  # noqa: BLE001
         # Repli systématique sur le pont R si firthlogist n'est pas disponible
         use_r_bridge = True
         firth_warning = f"Le package Python 'firthlogist' n'est pas disponible ({e}). Utilisation du moteur R (logistf) en repli."
@@ -502,7 +539,7 @@ def run_firth_logistic(
             "n_obs": int(r_result.get("n_obs", len(df))),
         }
 
-        generated_code = f"""import pandas as pd
+        generated_code = """import pandas as pd
 # Ce modèle utilise la correction de Firth via le pont R (logistf) 
 # pour garantir la convergence en cas de séparation des données.
 df = pd.read_csv("CHEMIN_VERS_VOS_DONNEES.csv")
@@ -512,7 +549,10 @@ df = pd.read_csv("CHEMIN_VERS_VOS_DONNEES.csv")
         return AnalysisResult(
             method="firth_logistic_regression",
             dataset_id="in_memory",
-            variables={outcome: {"role": "outcome"}, **{p: {"role": "predictor"} for p in predictors}},
+            variables={
+                outcome: {"role": "outcome"},
+                **{p: {"role": "predictor"} for p in predictors},
+            },
             sample_size=int(r_result.get("n_obs", len(df))),
             preprocessing=["Correction de biais de Firth appliquée (via R)"],
             estimates=estimates,
@@ -522,8 +562,15 @@ df = pd.read_csv("CHEMIN_VERS_VOS_DONNEES.csv")
             model_metrics=model_metrics,
             diagnostics=[],
             warnings=[firth_warning] if firth_warning else [],
-            assumptions_checked=["Indépendance des observations", "Correction de Firth pour séparation"],
+            assumptions_checked=[
+                "Indépendance des observations",
+                "Correction de Firth pour séparation",
+            ],
             generated_code=generated_code,
             execution_log=["Modèle Firth ajusté avec succès via le pont R"],
-            software_versions={"python": platform.python_version(), "R": "utilisé via r_bridge"},
+            software_versions={
+                "python": platform.python_version(),
+                "R": "utilisé via r_bridge",
+            },
         )
+    return None # type: ignore[return-value]

@@ -27,6 +27,7 @@ def _make_step(
 ) -> TransformStep:
     """Crée un TransformStep avec un step_id auto-généré."""
     import time
+
     step_id = f"step_{int(time.time() * 1000)}"
     return TransformStep(
         step_id=step_id,
@@ -117,7 +118,7 @@ def recode_missing(
 
     codes_str = ", ".join(repr(c) for c in codes)
     code = f'df["{column}"] = df["{column}"].replace([{codes_str}], pd.NA)'
-    
+
     step = _make_step(
         operation="recode_missing",
         params={"column": column, "codes": codes},

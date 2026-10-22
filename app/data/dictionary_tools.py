@@ -81,7 +81,9 @@ def set_variable_metadata(
         name=original_var.name,
         label=original_var.label,
         dtype=original_var.dtype,
-        semantic_type=measure_level if measure_level is not None else original_var.semantic_type,
+        semantic_type=measure_level
+        if measure_level is not None
+        else original_var.semantic_type,
         levels=original_var.levels,
         labels=original_var.labels,
         missing_values=list(original_var.missing_values),

@@ -215,7 +215,7 @@ def check_influential_observations(model_result) -> list[DiagnosticFinding]:
                         },
                     )
                 )
-    except Exception:
+    except Exception:  # noqa: S110, BLE001
         # Si le calcul échoue (ex. modèle non supporté), on ne lève pas d'erreur
         pass
 

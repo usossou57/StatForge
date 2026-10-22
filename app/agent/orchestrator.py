@@ -13,7 +13,7 @@ from typing import Any
 
 import pandas as pd
 
-from app.agent.llm_provider import LLMProvider, LLMResponse
+from app.agent.llm_provider import LLMProvider
 from app.agent.tools import TOOL_SCHEMAS, execute_tool
 from app.results.models import AnalysisResult
 
@@ -174,7 +174,7 @@ Tu dois répondre en français, de manière concise et précise."""
                     self.conversation_history.append(
                         ConversationMessage(
                             role="tool",
-                            content=f"Erreur lors de l'exécution de {tool_call['name']}: {str(e)}",
+                            content=f"Erreur lors de l'exécution de {tool_call['name']}: {e!s}",
                             tool_call_id=tool_call["id"],
                             name=tool_call["name"],
                         )
@@ -204,33 +204,39 @@ Tu dois répondre en français, de manière concise et précise."""
 
         for msg in self.conversation_history:
             if msg.role == "tool":
-                messages.append({
-                    "role": "tool",
-                    "content": msg.content or "",
-                    "tool_call_id": msg.tool_call_id or "",
-                    "name": msg.name or "",
-                })
+                messages.append(
+                    {
+                        "role": "tool",
+                        "content": msg.content or "",
+                        "tool_call_id": msg.tool_call_id or "",
+                        "name": msg.name or "",
+                    }
+                )
             elif msg.tool_calls:
-                messages.append({
-                    "role": "assistant",
-                    "content": msg.content,
-                    "tool_calls": [
-                        {
-                            "id": tc["id"],
-                            "type": "function",
-                            "function": {
-                                "name": tc["name"],
-                                "arguments": json.dumps(tc["arguments"]),
-                            },
-                        }
-                        for tc in msg.tool_calls
-                    ],
-                })
+                messages.append(
+                    {
+                        "role": "assistant",
+                        "content": msg.content,
+                        "tool_calls": [
+                            {
+                                "id": tc["id"],
+                                "type": "function",
+                                "function": {
+                                    "name": tc["name"],
+                                    "arguments": json.dumps(tc["arguments"]),
+                                },
+                            }
+                            for tc in msg.tool_calls
+                        ],
+                    }
+                )
             else:
-                messages.append({
-                    "role": msg.role,
-                    "content": msg.content or "",
-                })
+                messages.append(
+                    {
+                        "role": msg.role,
+                        "content": msg.content or "",
+                    }
+                )
 
         return messages
 
@@ -238,15 +244,19 @@ Tu dois répondre en français, de manière concise et précise."""
         """Sérialise un résultat d'outil en chaîne pour le LLM."""
         if isinstance(result, AnalysisResult):
             # Retourne un résumé structuré
-            return json.dumps({
-                "method": result.method,
-                "sample_size": result.sample_size,
-                "estimates": result.estimates,
-                "p_values": result.p_values,
-                "model_metrics": result.model_metrics,
-                "n_diagnostics": len(result.diagnostics),
-                "warnings": result.warnings,
-            }, indent=2, ensure_ascii=False)
+            return json.dumps(
+                {
+                    "method": result.method,
+                    "sample_size": result.sample_size,
+                    "estimates": result.estimates,
+                    "p_values": result.p_values,
+                    "model_metrics": result.model_metrics,
+                    "n_diagnostics": len(result.diagnostics),
+                    "warnings": result.warnings,
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
 
         if isinstance(result, list):
             # Liste de diagnostics
@@ -273,6 +283,7 @@ Tu dois répondre en français, de manière concise et précise."""
         """Réinitialise l'historique de conversation."""
         self.conversation_history.clear()
 
+
 # ──────────────────────────────────────────────────────────────────────
 # Fonctions de correction automatique (Phase 9 — Statistical Agent)
 # ──────────────────────────────────────────────────────────────────────
@@ -281,10 +292,7 @@ from app.diagnostics.models import DiagnosticFinding, Severity
 from app.planner.models import AnalysisPlan
 from app.statistics.regression import (
     run_firth_logistic,
-    run_linear_regression,
-    run_logistic_regression,
 )
-
 
 # Registre des corrections disponibles : code diagnostic -> action de correction
 _CORRECTION_RULES: dict[str, dict] = {
@@ -384,7 +392,7 @@ def propose_correction(
 def execute_confirmed_action(
     action: dict,
     df: pd.DataFrame,
-    data_dictionary: "DataDictionary",  # noqa: F821 — forward reference
+    data_dictionary: DataDictionary,  # noqa: F821 — forward reference
     confirmed: bool = False,
 ) -> AnalysisResult:
     """Exécute une action de correction APRÈS confirmation explicite de l'utilisateur.

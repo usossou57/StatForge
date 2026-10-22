@@ -88,7 +88,11 @@ def build_data_dictionary(
             dtype = "numeric"
         elif pd.api.types.is_datetime64_any_dtype(df[col]):
             dtype = "datetime"
-        elif isinstance(df[col].dtype, pd.CategoricalDtype) or df[col].dtype == object or pd.api.types.is_string_dtype(df[col]):
+        elif (
+            isinstance(df[col].dtype, pd.CategoricalDtype)
+            or df[col].dtype == object
+            or pd.api.types.is_string_dtype(df[col])
+        ):
             dtype = "categorical"
         else:
             dtype = "unknown"
@@ -97,7 +101,11 @@ def build_data_dictionary(
         semantic_type = None
         if dtype == "numeric":
             n_unique = df[col].nunique()
-            is_integer = df[col].dropna().apply(lambda x: x == int(x)).all() if n_unique > 0 else False
+            is_integer = (
+                df[col].dropna().apply(lambda x: x == int(x)).all()
+                if n_unique > 0
+                else False
+            )
 
             if n_unique == 2:
                 semantic_type = "binary"

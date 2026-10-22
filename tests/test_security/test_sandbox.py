@@ -124,10 +124,7 @@ class TestRunSandboxed:
         result = run_sandboxed(code, timeout_seconds=2)
         assert result["success"] is False
         # Soit le timeout Python lève TimeoutExpired, soit RLIMIT_CPU tue le process
-        assert (
-            "Timeout" in result["stderr"]
-            or result["returncode"] != 0
-        )
+        assert "Timeout" in result["stderr"] or result["returncode"] != 0
 
     @pytest.mark.skipif(
         sys.platform != "linux", reason="Limites resource uniquement sur Linux"
@@ -144,10 +141,7 @@ class TestRunSandboxed:
         result = run_sandboxed(code, timeout_seconds=2, max_memory_mb=2048)
         assert result["success"] is False
         # Soit timeout, soit limite CPU atteinte
-        assert (
-            "Timeout" in result["stderr"]
-            or result["returncode"] != 0
-        )
+        assert "Timeout" in result["stderr"] or result["returncode"] != 0
 
     def test_valid_statistical_code(self):
         """Un code statistique valide s'exécute correctement."""

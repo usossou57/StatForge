@@ -16,12 +16,13 @@ import streamlit as st
 
 from app.data.profiling import build_data_dictionary, profile_dataset
 
+
 def _generate_print_suffix(method: str) -> str:
     """Génère un bloc print() adapté à la méthode statistique.
-    
+
     Args:
         method: Nom de la méthode (ex: 'chi_square', 'linear_regression').
-    
+
     Returns:
         Code Python à ajouter à la fin du script pour afficher les résultats.
     """
@@ -192,7 +193,6 @@ if st.session_state["current_page"] == "upload":
     )
 
     if uploaded_file is not None or st.session_state["file_uploaded"]:
-
         if uploaded_file is not None:
             file_extension = Path(uploaded_file.name).suffix.lower()
 
@@ -204,6 +204,7 @@ if st.session_state["current_page"] == "upload":
                 elif file_extension == ".sav":
                     try:
                         import pyreadstat
+
                         df, _ = pyreadstat.read_sav(uploaded_file)
                     except ImportError:
                         st.error(
@@ -216,9 +217,7 @@ if st.session_state["current_page"] == "upload":
                     st.stop()
 
                 with tempfile.NamedTemporaryFile(
-                    delete=False,
-                    suffix=file_extension,
-                    prefix="statforge_"
+                    delete=False, suffix=file_extension, prefix="statforge_"
                 ) as tmp:
                     tmp.write(uploaded_file.getvalue())
                     tmp_path = tmp.name
@@ -235,7 +234,9 @@ if st.session_state["current_page"] == "upload":
                 st.session_state["current_plan"] = None
                 st.session_state["current_result"] = None
 
-                st.success(f"✅ Fichier chargé avec succès : {len(df)} lignes, {len(df.columns)} colonnes")
+                st.success(
+                    f"✅ Fichier chargé avec succès : {len(df)} lignes, {len(df.columns)} colonnes"
+                )
 
             except Exception as e:
                 st.error(f"❌ Erreur lors de la lecture du fichier : {e}")
@@ -280,7 +281,9 @@ if st.session_state["current_page"] == "upload":
         profile = st.session_state["profile"]
 
         st.markdown(f"**Dataset :** {data_dictionary.dataset_name}")
-        st.markdown(f"**Taille :** {data_dictionary.n_rows} lignes × {data_dictionary.n_columns} colonnes")
+        st.markdown(
+            f"**Taille :** {data_dictionary.n_rows} lignes × {data_dictionary.n_columns} colonnes"
+        )
         st.markdown(f"**Hash :** `{data_dictionary.file_hash[:12]}...`")
         st.markdown("---")
 
@@ -292,13 +295,17 @@ if st.session_state["current_page"] == "upload":
             else:
                 missing_count = 0
 
-            variables_data.append({
-                "Nom": var_name,
-                "Type": var_info.dtype,
-                "Type sémantique": var_info.semantic_type or "N/A",
-                "Modalités": ", ".join(var_info.levels[:5]) if var_info.levels else "N/A",
-                "Valeurs manquantes": missing_count,
-            })
+            variables_data.append(
+                {
+                    "Nom": var_name,
+                    "Type": var_info.dtype,
+                    "Type sémantique": var_info.semantic_type or "N/A",
+                    "Modalités": ", ".join(var_info.levels[:5])
+                    if var_info.levels
+                    else "N/A",
+                    "Valeurs manquantes": missing_count,
+                }
+            )
 
         variables_df = pd.DataFrame(variables_data)
         st.dataframe(variables_df, use_container_width=True)
@@ -309,7 +316,8 @@ if st.session_state["current_page"] == "upload":
         with col1:
             st.markdown("**Variables numériques**")
             numeric_vars = [
-                var_name for var_name, var_info in data_dictionary.variables.items()
+                var_name
+                for var_name, var_info in data_dictionary.variables.items()
                 if var_info.dtype == "numeric" and var_name in df.columns
             ]
             if numeric_vars:
@@ -320,7 +328,8 @@ if st.session_state["current_page"] == "upload":
         with col2:
             st.markdown("**Variables catégorielles**")
             categorical_vars = [
-                var_name for var_name, var_info in data_dictionary.variables.items()
+                var_name
+                for var_name, var_info in data_dictionary.variables.items()
                 if var_info.dtype == "categorical" and var_name in df.columns
             ]
             if categorical_vars:
@@ -351,14 +360,18 @@ elif st.session_state["current_page"] == "analyse":
     st.title("🔍 Analyse statistique")
 
     if not st.session_state.get("file_uploaded", False):
-        st.warning("⚠️ Veuillez d'abord uploader un fichier dans la page 'Upload & Dictionnaire'.")
+        st.warning(
+            "⚠️ Veuillez d'abord uploader un fichier dans la page 'Upload & Dictionnaire'."
+        )
         st.stop()
 
     df = st.session_state.get("df")
     data_dictionary = st.session_state.get("data_dictionary")
 
     if df is None or data_dictionary is None:
-        st.error("❌ Données ou dictionnaire manquant. Veuillez re-uploader votre fichier.")
+        st.error(
+            "❌ Données ou dictionnaire manquant. Veuillez re-uploader votre fichier."
+        )
         st.stop()
 
     st.markdown(f"**Dataset :** {st.session_state.get('dataset_name', 'Inconnu')}")
@@ -377,7 +390,9 @@ elif st.session_state["current_page"] == "analyse":
 
     st.subheader("2. Plan d'analyse proposé")
 
-    if st.button("🤖 Générer un plan d'analyse", type="primary", key="generate_plan_btn"):
+    if st.button(
+        "🤖 Générer un plan d'analyse", type="primary", key="generate_plan_btn"
+    ):
         if not research_question:
             st.warning("Veuillez d'abord poser une question.")
         else:
@@ -388,7 +403,9 @@ elif st.session_state["current_page"] == "analyse":
 
                     api_key = os.environ.get("GROQ_API_KEY")
                     if not api_key:
-                        st.error("❌ Clé API Groq non configurée. Définissez la variable GROQ_API_KEY.")
+                        st.error(
+                            "❌ Clé API Groq non configurée. Définissez la variable GROQ_API_KEY."
+                        )
                         st.stop()
 
                     llm = GroqProvider(api_key=api_key)
@@ -400,7 +417,9 @@ elif st.session_state["current_page"] == "analyse":
 
                     st.session_state["current_plan"] = plan
                     st.session_state["research_question"] = research_question
-                    st.session_state["chat_history"].append({"role": "user", "content": research_question})
+                    st.session_state["chat_history"].append(
+                        {"role": "user", "content": research_question}
+                    )
                     st.success("✅ Plan d'analyse généré avec succès !")
 
                 except Exception as e:
@@ -412,7 +431,9 @@ elif st.session_state["current_page"] == "analyse":
         from app.planner.planner import needs_clarification
 
         if needs_clarification(plan):
-            st.warning("⚠️ Le plan a une confiance faible. Une clarification est nécessaire.")
+            st.warning(
+                "⚠️ Le plan a une confiance faible. Une clarification est nécessaire."
+            )
             st.markdown("**Question reformulée par le LLM :**")
             st.info(plan.research_question)
             st.markdown("**Raison de la faible confiance :**")
@@ -425,7 +446,9 @@ elif st.session_state["current_page"] == "analyse":
                 key="clarification_input",
             )
 
-            if st.button("🔄 Régénérer le plan avec la clarification", key="regenerate_plan_btn"):
+            if st.button(
+                "🔄 Régénérer le plan avec la clarification", key="regenerate_plan_btn"
+            ):
                 if clarification:
                     st.session_state["research_question"] = clarification
                     st.rerun()
@@ -443,40 +466,54 @@ elif st.session_state["current_page"] == "analyse":
 
             with col2:
                 st.markdown(f"**Variable cible (outcome) :** `{plan.outcome_variable}`")
-                st.markdown(f"**Prédicteurs ({len(plan.predictor_variables)}) :** {', '.join(f'`{p}`' for p in plan.predictor_variables)}")
+                st.markdown(
+                    f"**Prédicteurs ({len(plan.predictor_variables)}) :** {', '.join(f'`{p}`' for p in plan.predictor_variables)}"
+                )
                 if plan.reference_category:
-                    st.markdown(f"**Catégorie de référence :** `{plan.reference_category}`")
+                    st.markdown(
+                        f"**Catégorie de référence :** `{plan.reference_category}`"
+                    )
 
             st.markdown("### Justification")
             st.info(plan.rationale)
 
             if plan.assumptions_to_check:
                 st.markdown("### Hypothèses théoriques de la méthode")
-                st.markdown("*Ces hypothèses sont listées par le LLM à titre indicatif.*")
+                st.markdown(
+                    "*Ces hypothèses sont listées par le LLM à titre indicatif.*"
+                )
                 for assumption in plan.assumptions_to_check:
                     st.markdown(f"- {assumption}")
 
             st.markdown("---")
             st.subheader("3. Exécution de l'analyse")
 
-            if st.button("▶️ Exécuter l'analyse", type="primary", key="execute_analysis_btn"):
+            if st.button(
+                "▶️ Exécuter l'analyse", type="primary", key="execute_analysis_btn"
+            ):
                 with st.spinner("Exécution de l'analyse statistique..."):
                     try:
                         from app.agent.tools import execute_tool
 
                         method_name = plan.proposed_method
-                        if not method_name.startswith("run_") and not method_name.startswith("check_"):
+                        if not method_name.startswith(
+                            "run_"
+                        ) and not method_name.startswith("check_"):
                             method_name = f"run_{method_name}"
 
                         if method_name == "run_chi_square":
                             arguments = {
                                 "var1": plan.outcome_variable,
-                                "var2": plan.predictor_variables[0] if plan.predictor_variables else None,
+                                "var2": plan.predictor_variables[0]
+                                if plan.predictor_variables
+                                else None,
                             }
                         elif method_name in ("run_t_test", "run_anova"):
                             arguments = {
                                 "outcome": plan.outcome_variable,
-                                "group": plan.predictor_variables[0] if plan.predictor_variables else None,
+                                "group": plan.predictor_variables[0]
+                                if plan.predictor_variables
+                                else None,
                             }
                         else:
                             arguments = {
@@ -484,15 +521,21 @@ elif st.session_state["current_page"] == "analyse":
                                 "predictors": plan.predictor_variables,
                             }
                             if plan.reference_category:
-                                arguments["reference_category"] = plan.reference_category
+                                arguments["reference_category"] = (
+                                    plan.reference_category
+                                )
 
-                        result = execute_tool(name=method_name, arguments=arguments, df=df)
+                        result = execute_tool(
+                            name=method_name, arguments=arguments, df=df
+                        )
 
                         st.session_state["current_result"] = result
-                        st.session_state["chat_history"].append({
-                            "role": "assistant",
-                            "content": f"Analyse exécutée : {plan.proposed_method}",
-                        })
+                        st.session_state["chat_history"].append(
+                            {
+                                "role": "assistant",
+                                "content": f"Analyse exécutée : {plan.proposed_method}",
+                            }
+                        )
                         st.success("✅ Analyse exécutée avec succès !")
 
                     except Exception as e:
@@ -513,7 +556,9 @@ elif st.session_state["current_page"] == "analyse":
                         with [col1, col2, col3][i]:
                             st.metric(
                                 label=metric.replace("_", " ").title(),
-                                value=f"{value:.4f}" if isinstance(value, float) else value,
+                                value=f"{value:.4f}"
+                                if isinstance(value, float)
+                                else value,
                             )
                 else:
                     st.info("Aucune métrique disponible.")
@@ -527,15 +572,19 @@ elif st.session_state["current_page"] == "analyse":
                         p_value = result.p_values.get(var_name, 1.0)
                         ci = result.confidence_intervals.get(var_name, (0.0, 0.0))
 
-                        coefficients_data.append({
-                            "Variable": var_name,
-                            "Estimation": f"{estimate:.4f}",
-                            "Erreur Std.": f"{se:.4f}",
-                            "IC 95%": f"[{ci[0]:.4f}, {ci[1]:.4f}]",
-                            "p-value": f"{p_value:.4e}",
-                            "Significatif": "✅" if p_value < 0.05 else "❌",
-                        })
-                    st.dataframe(pd.DataFrame(coefficients_data), use_container_width=True)
+                        coefficients_data.append(
+                            {
+                                "Variable": var_name,
+                                "Estimation": f"{estimate:.4f}",
+                                "Erreur Std.": f"{se:.4f}",
+                                "IC 95%": f"[{ci[0]:.4f}, {ci[1]:.4f}]",
+                                "p-value": f"{p_value:.4e}",
+                                "Significatif": "✅" if p_value < 0.05 else "❌",
+                            }
+                        )
+                    st.dataframe(
+                        pd.DataFrame(coefficients_data), use_container_width=True
+                    )
                 else:
                     st.info("Aucun coefficient disponible.")
 
@@ -543,10 +592,14 @@ elif st.session_state["current_page"] == "analyse":
                     st.markdown("### Diagnostics")
                     for diag in result.diagnostics:
                         severity_emoji = {
-                            "certain_issue": "🔴", "probable_issue": "🟠",
-                            "warning": "🟡", "information": "🔵",
+                            "certain_issue": "🔴",
+                            "probable_issue": "🟠",
+                            "warning": "🟡",
+                            "information": "🔵",
                         }.get(diag.severity.value, "")
-                        st.markdown(f"{severity_emoji} **[{diag.severity.value}]** {diag.code}: {diag.message}")
+                        st.markdown(
+                            f"{severity_emoji} **[{diag.severity.value}]** {diag.code}: {diag.message}"
+                        )
 
                 if result.warnings:
                     st.markdown("### Avertissements")
@@ -557,7 +610,10 @@ elif st.session_state["current_page"] == "analyse":
                 st.code(result.generated_code, language="python")
 
                 from app.agent.orchestrator import propose_correction
-                correction_proposal = propose_correction(diagnostics=result.diagnostics, plan=plan)
+
+                correction_proposal = propose_correction(
+                    diagnostics=result.diagnostics, plan=plan
+                )
 
                 if correction_proposal:
                     st.markdown("---")
@@ -574,10 +630,15 @@ elif st.session_state["current_page"] == "analyse":
                         key="correction_confirmation",
                     )
 
-                    if st.button("✅ Appliquer la correction", disabled=not confirmation):
+                    if st.button(
+                        "✅ Appliquer la correction", disabled=not confirmation
+                    ):
                         with st.spinner("Application de la correction..."):
                             try:
-                                from app.agent.orchestrator import execute_confirmed_action
+                                from app.agent.orchestrator import (
+                                    execute_confirmed_action,
+                                )
+
                                 corrected_result = execute_confirmed_action(
                                     action=correction_proposal,
                                     df=df,
@@ -588,12 +649,16 @@ elif st.session_state["current_page"] == "analyse":
                                 st.success("✅ Correction appliquée avec succès !")
                                 st.rerun()
                             except Exception as e:
-                                st.error(f"❌ Erreur lors de l'application de la correction : {e}")
+                                st.error(
+                                    f"❌ Erreur lors de l'application de la correction : {e}"
+                                )
                                 st.exception(e)
 
                 st.markdown("---")
                 # Redirection programmatique robuste vers la page Rapport
-                if st.button("📝 Générer un rapport complet", key="generate_report_btn"):
+                if st.button(
+                    "📝 Générer un rapport complet", key="generate_report_btn"
+                ):
                     st.session_state["navigate_to"] = "rapport"
                     st.rerun()
 
@@ -621,7 +686,9 @@ elif st.session_state["current_page"] == "rapport":
     st.title("📝 Génération de rapport")
 
     if not st.session_state.get("file_uploaded", False):
-        st.warning("⚠️ Veuillez d'abord uploader un fichier dans la page 'Upload & Dictionnaire'.")
+        st.warning(
+            "⚠️ Veuillez d'abord uploader un fichier dans la page 'Upload & Dictionnaire'."
+        )
         st.stop()
 
     if st.session_state.get("current_result") is None:
@@ -656,7 +723,10 @@ elif st.session_state["current_page"] == "rapport":
     st.subheader("2. Rapport généré")
     try:
         from app.reports.generator import generate_report
-        report_content = generate_report(result=result, output_format=report_format.lower())
+
+        report_content = generate_report(
+            result=result, output_format=report_format.lower()
+        )
 
         if report_format == "HTML":
             st.components.v1.html(report_content, height=800, scrolling=True)
@@ -696,7 +766,11 @@ elif st.session_state["current_page"] == "rapport":
         )
 
         if Path(plot_path).exists():
-            st.image(plot_path, caption=f"Visualisation — {result.method}", use_container_width=True)
+            st.image(
+                plot_path,
+                caption=f"Visualisation — {result.method}",
+                use_container_width=True,
+            )
             with open(plot_path, "rb") as f:
                 st.download_button(
                     label="📥 Télécharger le graphique (PNG)",
@@ -732,7 +806,9 @@ elif st.session_state["current_page"] == "rapport":
     st.markdown("---")
     st.subheader("▶️ Exécution dans le sandbox de sécurité")
 
-    if st.button("▶️ Exécuter le code reproductible", type="primary", key="run_sandbox_btn"):
+    if st.button(
+        "▶️ Exécuter le code reproductible", type="primary", key="run_sandbox_btn"
+    ):
         try:
             from app.security.sandbox import run_sandboxed
 
@@ -741,13 +817,17 @@ elif st.session_state["current_page"] == "rapport":
             if temp_file_path and Path(temp_file_path).exists():
                 # 1. Préfixer avec le chargement du fichier
                 if file_extension == ".csv":
-                    load_code = f'import pandas as pd\ndf = pd.read_csv(r"{temp_file_path}")\n'
+                    load_code = (
+                        f'import pandas as pd\ndf = pd.read_csv(r"{temp_file_path}")\n'
+                    )
                 elif file_extension in (".xlsx", ".xls"):
                     load_code = f'import pandas as pd\ndf = pd.read_excel(r"{temp_file_path}")\n'
                 elif file_extension == ".sav":
                     load_code = f'import pandas as pd\nimport pyreadstat\ndf, _ = pyreadstat.read_sav(r"{temp_file_path}")\n'
                 else:
-                    load_code = f'import pandas as pd\ndf = pd.read_csv(r"{temp_file_path}")\n'
+                    load_code = (
+                        f'import pandas as pd\ndf = pd.read_csv(r"{temp_file_path}")\n'
+                    )
 
                 sandbox_code = load_code + sandbox_code
 
@@ -758,9 +838,7 @@ elif st.session_state["current_page"] == "rapport":
 
             with st.spinner("Exécution sécurisée en cours (timeout 15s)..."):
                 sandbox_result = run_sandboxed(
-                    code=sandbox_code,
-                    timeout_seconds=15,
-                    max_memory_mb=512
+                    code=sandbox_code, timeout_seconds=15, max_memory_mb=512
                 )
 
             st.markdown("### Résultat de l'exécution")
@@ -781,7 +859,9 @@ elif st.session_state["current_page"] == "rapport":
 
         except ValueError as e:
             st.error(f"️ **Code bloqué par le sandbox de sécurité :**\n{e}")
-            st.markdown("*Le code généré contient des opérations interdites (réseau, système, eval, etc.).*")
+            st.markdown(
+                "*Le code généré contient des opérations interdites (réseau, système, eval, etc.).*"
+            )
         except Exception as e:
             st.error(f"❌ Erreur inattendue lors de l'exécution : {e}")
             st.exception(e)
@@ -817,14 +897,21 @@ elif st.session_state["current_page"] == "rapport":
 
     if st.button("💾 Sauvegarder l'analyse", key="save_analysis_btn"):
         try:
-            from app.reproducibility.project import build_project_from_analysis, save_analysis
             from app.reproducibility.history import append_to_history
+            from app.reproducibility.project import (
+                build_project_from_analysis,
+                save_analysis,
+            )
 
             # Récupération défensive locale
             loc_dataset_name = st.session_state.get("dataset_name", "Inconnu")
             loc_df = st.session_state.get("df")
 
-            dataset_rows = len(loc_df) if loc_df is not None else (result.sample_size if hasattr(result, 'sample_size') else 0)
+            dataset_rows = (
+                len(loc_df)
+                if loc_df is not None
+                else (result.sample_size if hasattr(result, "sample_size") else 0)
+            )
             dataset_columns = len(loc_df.columns) if loc_df is not None else 0
 
             project = build_project_from_analysis(
@@ -876,11 +963,16 @@ elif st.session_state["current_page"] == "rapport":
 
     if st.button("🔄 Rejouer l'analyse", key="replay_analysis_btn"):
         try:
-            from app.reproducibility.project import build_project_from_analysis, save_analysis, replay_analysis
-            from app.reproducibility.history import get_history, append_to_history
             import hashlib
             import json
             from pathlib import Path
+
+            from app.reproducibility.history import append_to_history, get_history
+            from app.reproducibility.project import (
+                build_project_from_analysis,
+                replay_analysis,
+                save_analysis,
+            )
 
             # Récupération défensive
             loc_dataset_name = st.session_state.get("dataset_name", "Inconnu")
@@ -890,7 +982,7 @@ elif st.session_state["current_page"] == "rapport":
             dataset_columns = len(loc_df.columns) if loc_df is not None else 0
 
             # ── ID DÉTERMINISTE (Méthode + Dataset) ────────────────────
-            stable_input = (result.method + loc_dataset_name).encode('utf-8')
+            stable_input = (result.method + loc_dataset_name).encode("utf-8")
             stable_hash = hashlib.md5(stable_input).hexdigest()[:12]
             project_id = f"statforge_{stable_hash}"
 
@@ -946,17 +1038,25 @@ elif st.session_state["current_page"] == "rapport":
                     new_lines.append(json.dumps(entry, ensure_ascii=False))
 
                 if updated:
-                    history_file.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
-                    st.success(f"✅ Rejeu réussi ! Compteur mis à jour : {final_count} rejeu(s).")
+                    history_file.write_text(
+                        "\n".join(new_lines) + "\n", encoding="utf-8"
+                    )
+                    st.success(
+                        f"✅ Rejeu réussi ! Compteur mis à jour : {final_count} rejeu(s)."
+                    )
 
                     # Stockage en session pour synchronisation avec l'Étape 9
                     st.session_state["just_updated_project_id"] = project_id
                     st.session_state["just_updated_count"] = final_count
 
                 else:
-                    st.warning(f"⚠️ Le project_id {project_id} n'a pas été trouvé dans history.jsonl")
+                    st.warning(
+                        f"⚠️ Le project_id {project_id} n'a pas été trouvé dans history.jsonl"
+                    )
             else:
-                st.error("❌ Le fichier history.jsonl n'existe pas dans le dossier projects/")
+                st.error(
+                    "❌ Le fichier history.jsonl n'existe pas dans le dossier projects/"
+                )
 
             # Comparaison
             st.markdown("### Comparaison original vs rejeu")
@@ -971,12 +1071,18 @@ elif st.session_state["current_page"] == "rapport":
                     st.markdown(f"- `{var_name}`: {estimate:.6f}")
 
             estimates_match = all(
-                abs(result.estimates.get(k, 0) - replayed_result.estimates.get(k, 0)) < 1e-10
-                for k in set(list(result.estimates.keys()) + list(replayed_result.estimates.keys()))
+                abs(result.estimates.get(k, 0) - replayed_result.estimates.get(k, 0))
+                < 1e-10
+                for k in set(
+                    list(result.estimates.keys())
+                    + list(replayed_result.estimates.keys())
+                )
             )
 
             if estimates_match:
-                st.success("✅ Les résultats sont **identiques** (à 1e-10 près). Reproductibilité confirmée !")
+                st.success(
+                    "✅ Les résultats sont **identiques** (à 1e-10 près). Reproductibilité confirmée !"
+                )
             else:
                 st.warning("⚠️ Les résultats diffèrent légèrement.")
 
@@ -991,7 +1097,11 @@ elif st.session_state["current_page"] == "rapport":
     st.subheader("9. Historique des analyses")
 
     # Bouton pour rafraîchir l'affichage (utile après rechargement de page)
-    if st.button("🔄 Rafraîchir l'affichage de l'historique", key="refresh_history_btn", type="secondary"):
+    if st.button(
+        "🔄 Rafraîchir l'affichage de l'historique",
+        key="refresh_history_btn",
+        type="secondary",
+    ):
         st.rerun()
 
     try:
@@ -1023,8 +1133,13 @@ elif st.session_state["current_page"] == "rapport":
             for entry in entries[:10]:
                 # Synchronisation avec le compteur mis à jour à l'Étape 8
                 display_count = entry.get("replay_count", 0)
-                if st.session_state.get("just_updated_project_id") == entry["project_id"]:
-                    display_count = st.session_state.get("just_updated_count", display_count)
+                if (
+                    st.session_state.get("just_updated_project_id")
+                    == entry["project_id"]
+                ):
+                    display_count = st.session_state.get(
+                        "just_updated_count", display_count
+                    )
 
                 with st.expander(
                     f"{entry['project_id']} — {entry['method']} ({entry['status']})",
@@ -1036,12 +1151,17 @@ elif st.session_state["current_page"] == "rapport":
                     st.markdown(f"**Timestamp :** {entry['timestamp']}")
                     st.markdown(f"**Rejeux :** {display_count}")
 
-                    if st.button("📂 Charger cette analyse", key=f"load_{entry['project_id']}"):
+                    if st.button(
+                        "📂 Charger cette analyse", key=f"load_{entry['project_id']}"
+                    ):
                         try:
                             from app.reproducibility.project import load_project
+
                             project = load_project(entry["project_file"])
                             st.session_state["current_result"] = project
-                            st.session_state["research_question"] = project.research_question
+                            st.session_state["research_question"] = (
+                                project.research_question
+                            )
                             st.success(f"Analyse {entry['project_id']} chargée !")
                             st.rerun()
                         except Exception as e:

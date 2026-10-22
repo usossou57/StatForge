@@ -269,6 +269,8 @@ def test_to_json_gere_caracteres_speciaux() -> None:
 
     assert reconstructed.dataset_name == "données_françaises"
     assert reconstructed.variables["réponse"].label == "Réponse à la question"
-    assert reconstructed.variables["réponse"].metadata["clé"] == "valeur_avec_accents_éèàù"
+    assert (
+        reconstructed.variables["réponse"].metadata["clé"] == "valeur_avec_accents_éèàù"
+    )
     assert reconstructed.source_path == "/données/fichier.csv"
     assert reconstructed.file_hash == "hash_avec_émojis_🎉"

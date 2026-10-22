@@ -218,8 +218,8 @@ def test_to_python_script_rejoue_6_transformations(tmp_path) -> None:
     df_manual["sexe"] = df_manual["sexe"].map({1: "Homme", 2: "Femme"})
     df_manual["age_centre"] = df_manual["age"] - df_manual["age"].mean()
     df_manual["score_std"] = (
-        (df_manual["score"] - df_manual["score"].mean()) / df_manual["score"].std()
-    )
+        df_manual["score"] - df_manual["score"].mean()
+    ) / df_manual["score"].std()
     df_manual["age_sup_50"] = (df_manual["age"] > 50).astype(int)
     df_manual = df_manual.drop(columns=["groupe"])
     df_manual = df_manual.sort_values("age").reset_index(drop=True)

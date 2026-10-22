@@ -113,7 +113,6 @@ def summarize_variables(
             # Conversions explicites avec ignore pour satisfaire mypy sur les scalaires pandas
             min_val = float(series.min()) if pd.notna(series.min()) else None  # type: ignore[arg-type]
             max_val = float(series.max()) if pd.notna(series.max()) else None  # type: ignore[arg-type]
-
             mode_val = series.mode().iloc[0] if not series.mode().empty else None
             mode_float = (
                 float(mode_val) if mode_val is not None and pd.notna(mode_val) else None
@@ -126,18 +125,18 @@ def summarize_variables(
                     "n_missing": int(n_missing),
                     "missing_pct": _safe_round(float(missing_pct)),
                     "mean": _safe_round(
-                        float(series.mean()) if pd.notna(series.mean()) else None
-                    ),  # type: ignore[arg-type]
+                        float(series.mean()) if pd.notna(series.mean()) else None  # type: ignore[arg-type]
+                    ),
                     "median": _safe_round(
-                        float(series.median()) if pd.notna(series.median()) else None
-                    ),  # type: ignore[arg-type]
+                        float(series.median()) if pd.notna(series.median()) else None  # type: ignore[arg-type]
+                    ),
                     "mode": _safe_round(mode_float),
                     "std": _safe_round(
-                        float(series.std()) if pd.notna(series.std()) else None
-                    ),  # type: ignore[arg-type]
+                        float(series.std()) if pd.notna(series.std()) else None  # type: ignore[arg-type]
+                    ),
                     "variance": _safe_round(
-                        float(series.var()) if pd.notna(series.var()) else None
-                    ),  # type: ignore[arg-type]
+                        float(series.var()) if pd.notna(series.var()) else None  # type: ignore[arg-type]
+                    ),
                     "min": _safe_round(min_val),
                     "max": _safe_round(max_val),
                     "range": _safe_round(max_val - min_val)
@@ -146,26 +145,26 @@ def summarize_variables(
                     "q1": _safe_round(
                         float(series.quantile(0.25))
                         if pd.notna(series.quantile(0.25))
-                        else None
-                    ),  # type: ignore[arg-type]
+                        else None  # type: ignore[arg-type]
+                    ),
                     "q3": _safe_round(
                         float(series.quantile(0.75))
                         if pd.notna(series.quantile(0.75))
-                        else None
-                    ),  # type: ignore[arg-type]
+                        else None  # type: ignore[arg-type]
+                    ),
                     "iqr": _safe_round(
                         float(series.quantile(0.75) - series.quantile(0.25))
                     )
                     if n > 0
                     else None,  # type: ignore[arg-type]
                     "skewness": _safe_round(
-                        float(series.skew()) if pd.notna(series.skew()) else None
-                    ),  # type: ignore[arg-type]
+                        float(series.skew()) if pd.notna(series.skew()) else None  # type: ignore[arg-type]
+                    ),
                     "kurtosis": _safe_round(
-                        float(series.kurtosis())
+                        float(series.kurtosis())  # type: ignore[arg-type]
                         if pd.notna(series.kurtosis())
-                        else None
-                    ),  # type: ignore[arg-type]
+                        else None  # type: ignore[arg-type]
+                    ),
                 }
             )
         else:

@@ -6,7 +6,6 @@ from app.agent.llm_provider import LLMProvider, _extract_json
 from app.data.models import DataDictionary
 from app.planner.models import AnalysisPlan
 
-
 _PLANNER_SYSTEM_PROMPT = """Tu es un expert en méthodologie de recherche et en statistiques.
 
 Ton rôle : proposer un plan d'analyse structuré à partir d'une question de recherche et d'un dictionnaire de données.
@@ -80,7 +79,9 @@ Propose un plan d'analyse structuré en respectant le schéma JSON attendu."""
         response_schema=AnalysisPlan,
     )
 
-    if response.structured_output and isinstance(response.structured_output, AnalysisPlan):
+    if response.structured_output and isinstance(
+        response.structured_output, AnalysisPlan
+    ):
         return response.structured_output
 
     if response.text:

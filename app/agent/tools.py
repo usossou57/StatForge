@@ -5,11 +5,10 @@ statistique. Il ne reçoit jamais de DataFrame brut depuis le LLM — uniquement
 des noms de variables et des arguments structurés.
 
 Contraintes respectées :
-- T8 : aucun DataFrame brut envoyé au LLM
-- T9 : passage par execute_tool, jamais d'appel direct aux fonctions stats
-- T14 : confirmation humaine pour les actions modifiant l'état (gérée par l'orchestrator)
+    T8  : aucun DataFrame brut envoyé au LLM
+    T9  : passage par execute_tool, jamais d'appel direct aux fonctions stats
+    T14 : confirmation humaine pour les actions modifiant l'état (gérée par l'orchestrator)
 """
-
 from __future__ import annotations
 
 from typing import Any
@@ -22,7 +21,6 @@ from app.results.models import AnalysisResult
 # ──────────────────────────────────────────────────────────────────────
 # Schémas JSON des outils exposés au LLM (tool calling OpenAI-compatible)
 # ──────────────────────────────────────────────────────────────────────
-
 TOOL_SCHEMAS: list[dict[str, Any]] = [
     # ── Tests classiques (Phase 3) ───────────────────────────────────
     {
@@ -66,9 +64,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                     },
                     "group": {
                         "type": "string",
-                        "description": (
-                            "Nom de la variable catégorielle à 2 modalités (groupes)"
-                        ),
+                        "description": "Nom de la variable catégorielle à 2 modalités (groupes)",
                     },
                 },
                 "required": ["outcome", "group"],
@@ -99,7 +95,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
             },
         },
     },
-    # ── Régressions (Phases 3 et 6) ───────────────────────────────
+    # ── Régressions (Phases 3 et 6) ──────────────────────────────────
     {
         "type": "function",
         "function": {
@@ -148,8 +144,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                     "reference_category": {
                         "type": "string",
                         "description": (
-                            "Catégorie de référence pour les prédicteurs catégoriels "
-                            "(optionnel)"
+                            "Catégorie de référence pour les prédicteurs catégoriels (optionnel)"
                         ),
                     },
                 },
@@ -170,9 +165,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                 "properties": {
                     "outcome": {
                         "type": "string",
-                        "description": (
-                            "Nom de la variable catégorielle (outcome, >= 3 modalités)"
-                        ),
+                        "description": "Nom de la variable catégorielle (outcome, >= 3 modalités)",
                     },
                     "predictors": {
                         "type": "array",
@@ -245,8 +238,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                     "method": {
                         "type": "string",
                         "description": (
-                            "Méthode statistique ('logistic_regression', "
-                            "'linear_regression', etc.)"
+                            "Méthode statistique ('logistic_regression', 'linear_regression', etc.)"
                         ),
                     },
                     "n_predictors": {
@@ -258,7 +250,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
             },
         },
     },
-    # ── Rapports (Phase 4) ──────────────────────────────────────────
+    # ── Rapports (Phase 4) ───────────────────────────────────────────
     {
         "type": "function",
         "function": {
@@ -282,11 +274,26 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
     },
 ]
 
+# Liste des noms d'outils reconnus (pour les messages d'erreur)
+_AVAILABLE_TOOLS = [schema["function"]["name"] for schema in TOOL_SCHEMAS]
+
+# Liste des outils qui nécessitent impérativement un DataFrame
+_TOOLS_REQUIRING_DF = [
+    "run_chi_square",
+    "run_t_test",
+    "run_anova",
+    "run_linear_regression",
+    "run_logistic_regression",
+    "run_multinomial_logistic_regression",
+    "run_firth_logistic",
+    "check_multicollinearity",
+    "check_sample_size",
+]
+
 
 # ──────────────────────────────────────────────────────────────────────
 # Point d'entrée unique pour l'exécution d'outils
 # ──────────────────────────────────────────────────────────────────────
-
 def execute_tool(
     name: str,
     arguments: dict[str, Any],
@@ -314,37 +321,22 @@ def execute_tool(
     Raises:
         ValueError: Si l'outil est inconnu ou si les arguments requis sont manquants.
     """
-    # ── Vérification de l'existence de l'outil ──────────────────────
-    available_tools = [schema["function"]["name"] for schema in TOOL_SCHEMAS]
-    if name not in available_tools:
-        raise ValueError(
-            f"Outil '{name}' non reconnu. "
-            f"Outils disponibles : {', '.join(available_tools)}"
-        )
+    # ── Garde 1 : outils nécessitant un DataFrame ────────────────────
+    if df is None and name in _TOOLS_REQUIRING_DF:
+        raise ValueError("L'outil nécessite un DataFrame")
 
-    # ── Outils statistiques : df obligatoire ────────────────────────
-    statistical_tools = {
-        "run_chi_square", "run_t_test", "run_anova",
-        "run_linear_regression", "run_logistic_regression",
-        "run_multinomial_logistic_regression", "run_firth_logistic",
-        "check_multicollinearity", "check_sample_size",
-    }
-    if name in statistical_tools and df is None:
-        raise ValueError(
-            f"L'outil '{name}' nécessite un DataFrame (df) valide."
-        )
+    # ── Garde 2 : generate_report nécessite un AnalysisResult ─────────
+    if name == "generate_report" and result is None:
+        raise ValueError("L'outil nécessite un AnalysisResult")
 
-    # ── generate_report : result obligatoire ────────────────────────
+    # ── Rapports (Phase 4) ───────────────────────────────────────────
     if name == "generate_report":
-        if result is None:
-            raise ValueError(
-                "L'outil 'generate_report' nécessite un AnalysisResult."
-            )
         from app.reports.generator import generate_report
+
         output_format = arguments.get("output_format", "html")
         return generate_report(result=result, output_format=output_format)
 
-    # ── Tests classiques (Phase 3) ─────────────────────────────────
+    # ── Tests classiques (Phase 3) ───────────────────────────────────
     if name == "run_chi_square":
         from app.statistics.tests_classiques import run_chi_square
 
@@ -372,8 +364,8 @@ def execute_tool(
             group=arguments["group"],
         )
 
-    # ── Régressions (Phases 3 et 6) ────────────────────────────────
-    if name == "run_linear_regression":
+    # ── Régressions (Phases 3 et 6) ──────────────────────────────────
+    if name in ["run_linear_regression", "linear_regression"]:
         from app.statistics.regression import run_linear_regression
 
         return run_linear_regression(
@@ -382,7 +374,7 @@ def execute_tool(
             predictors=arguments["predictors"],
         )
 
-    if name == "run_logistic_regression":
+    if name in ["run_logistic_regression", "logistic_regression"]:
         from app.statistics.regression import run_logistic_regression
 
         return run_logistic_regression(
@@ -410,7 +402,7 @@ def execute_tool(
             predictors=arguments["predictors"],
         )
 
-    # ── Diagnostics (Phase 5) ───────────────────────────────────────
+    # ── Diagnostics (Phase 5) ────────────────────────────────────────
     if name == "check_multicollinearity":
         from app.diagnostics.checks import check_multicollinearity
 
@@ -428,8 +420,8 @@ def execute_tool(
             n_predictors=arguments["n_predictors"],
         )
 
-    # ── Fallback (ne devrait jamais être atteint) ───────────────────
+    # ── Fallback (outil inconnu) ─────────────────────────────────────
     raise ValueError(
-        f"Outil '{name}' non implémenté. "
-        f"Outils disponibles : {', '.join(available_tools)}"
+        f"Outil '{name}' non reconnu. "
+        f"Outils disponibles : {', '.join(_AVAILABLE_TOOLS)}"
     )

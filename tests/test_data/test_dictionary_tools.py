@@ -93,7 +93,9 @@ def test_set_variable_metadata_variable_inexistante(sample_dd: DataDictionary) -
         set_variable_metadata(sample_dd, "inexistante", unit="kg")
 
 
-def test_set_variable_metadata_niveau_mesure_invalide(sample_dd: DataDictionary) -> None:
+def test_set_variable_metadata_niveau_mesure_invalide(
+    sample_dd: DataDictionary,
+) -> None:
     """Test avec un niveau de mesure invalide."""
     with pytest.raises(ValueError, match="Niveau de mesure invalide"):
         set_variable_metadata(sample_dd, "age", measure_level="continu")  # type: ignore

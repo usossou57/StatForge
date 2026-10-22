@@ -53,24 +53,24 @@ def test_shapiro_wilk_against_r(validation_dataset: pd.DataFrame) -> None:
 
 def test_anderson_darling_against_r(validation_dataset: pd.DataFrame) -> None:
     """Valide Anderson-Darling contre R : nortest::ad.test(x).
-    
+
     R output: A = 0.0909121, p-value = 0.9961969
-    
-    Note : SciPy ne calcule pas de p-value exacte pour Anderson-Darling, 
-    mais retourne des seuils critiques. Si la statistique est inférieure 
+
+    Note : SciPy ne calcule pas de p-value exacte pour Anderson-Darling,
+    mais retourne des seuils critiques. Si la statistique est inférieure
     au seuil à 15%, notre fonction d'approximation retourne 0.15 (p > 0.15),
     ce qui est mathématiquement cohérent avec la p-value de R (0.996 > 0.15).
     """
     result = run_normality_tests(validation_dataset, "x", methods=["anderson"])
     anderson_stats = result.model_metrics["tables"]["normality_tests"]["anderson"]
-    
+
     # 1. La statistique A doit correspondre exactement à R
     assert anderson_stats["statistic"] == pytest.approx(0.0909121, abs=1e-6)
-    
+
     # 2. La p-value approximative de SciPy sera 0.15 (car stat < seuil 15%)
     # Ce qui est cohérent avec la vraie p-value de R (0.996 > 0.15)
     assert anderson_stats["p_value"] == pytest.approx(0.15, abs=1e-6)
-    
+
     # 3. Le diagnostic doit conclure à la normalité
     assert result.model_metrics["is_normal"] is True
 

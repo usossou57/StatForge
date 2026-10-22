@@ -36,7 +36,9 @@ def import_csv(path: str) -> pd.DataFrame:
     try:
         return pd.read_csv(path)
     except Exception as e:
-        raise ValueError(f"Impossible de lire le fichier CSV : {path}. Erreur : {e}") from e
+        raise ValueError(
+            f"Impossible de lire le fichier CSV : {path}. Erreur : {e}"
+        ) from e
 
 
 def import_xlsx(path: str) -> pd.DataFrame:
@@ -125,7 +127,9 @@ def import_json(path: str) -> pd.DataFrame:
             # Format JSON array ou objet
             return pd.read_json(file_path, encoding="utf-8")
     except Exception as e:
-        raise ValueError(f"Impossible de lire le fichier JSON : {path}. Erreur : {e}") from e
+        raise ValueError(
+            f"Impossible de lire le fichier JSON : {path}. Erreur : {e}"
+        ) from e
 
 
 def import_parquet(path: str) -> pd.DataFrame:
@@ -235,7 +239,9 @@ def import_xml(path: str, xpath: str = "./*") -> pd.DataFrame:
     try:
         return pd.read_xml(path, xpath=xpath)
     except Exception as e:
-        raise ValueError(f"Impossible de lire le fichier XML : {path}. Erreur : {e}") from e
+        raise ValueError(
+            f"Impossible de lire le fichier XML : {path}. Erreur : {e}"
+        ) from e
 
 
 def import_sql(connection_url: str, query: str) -> pd.DataFrame:
@@ -270,7 +276,15 @@ def import_sql(connection_url: str, query: str) -> pd.DataFrame:
         )
 
     # Détection de requêtes dangereuses supplémentaires
-    dangerous_keywords = ["INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE", "TRUNCATE"]
+    dangerous_keywords = [
+        "INSERT",
+        "UPDATE",
+        "DELETE",
+        "DROP",
+        "ALTER",
+        "CREATE",
+        "TRUNCATE",
+    ]
     for keyword in dangerous_keywords:
         if keyword in query_stripped:
             raise InvalidMethodInputError(
@@ -283,11 +297,11 @@ def import_sql(connection_url: str, query: str) -> pd.DataFrame:
         from sqlalchemy import create_engine, text
 
         engine = create_engine(connection_url)
-        # pd.read_sql gère nativement la conversion en DataFrame et évite 
+        # pd.read_sql gère nativement la conversion en DataFrame et évite
         # les erreurs de typage mypy liées à result.fetchall() / result.keys()
         df = pd.read_sql(text(query), engine)
         return df
-        
+
     except InvalidMethodInputError:
         # Re-raise les erreurs de validation telles quelles
         raise

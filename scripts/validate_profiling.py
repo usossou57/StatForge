@@ -50,7 +50,7 @@ def validate_profiling() -> None:
         df = import_csv(str(csv_path))
         print(f"✅ Import réussi : {df.shape[0]} lignes × {df.shape[1]} colonnes")
         print(f"   Colonnes : {', '.join(df.columns.tolist())}")
-    except Exception as e:      # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         print(f"❌ ERREUR lors de l'import : {e}")
         sys.exit(1)
 
@@ -59,7 +59,9 @@ def validate_profiling() -> None:
 
     profile = profile_dataset(df)
 
-    print(f"📊 Dimensions : {profile['n_rows']} lignes × {profile['n_columns']} colonnes")
+    print(
+        f"📊 Dimensions : {profile['n_rows']} lignes × {profile['n_columns']} colonnes"
+    )
 
     print_subsection("Types de données")
     for col, dtype in profile["dtypes"].items():
@@ -129,7 +131,7 @@ def validate_profiling() -> None:
             if var.levels:
                 print(f"      Niveaux       : {var.levels}")
 
-    except Exception as e:      # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         print(f"❌ ERREUR lors de la construction : {e}")
         sys.exit(1)
 
@@ -150,7 +152,9 @@ def validate_profiling() -> None:
     # Vérification 2 : Valeurs manquantes comptées
     checks_total += 1
     if profile["missing_pct"]["age"] > 0:
-        print(f"✅ Valeurs manquantes détectées dans 'age' : {profile['missing_pct']['age']:.1f}%")
+        print(
+            f"✅ Valeurs manquantes détectées dans 'age' : {profile['missing_pct']['age']:.1f}%"
+        )
         checks_passed += 1
     else:
         print("❌ Valeurs manquantes NON détectées dans 'age'")
@@ -160,7 +164,9 @@ def validate_profiling() -> None:
     checks_total += 1
     niveau_etude_var = data_dict.variables.get("niveau_etude")
     if niveau_etude_var is not None:
-        print(f"✅ Variable 'niveau_etude' correctement typée : dtype={niveau_etude_var.dtype}, semantic_type={niveau_etude_var.semantic_type}")
+        print(
+            f"✅ Variable 'niveau_etude' correctement typée : dtype={niveau_etude_var.dtype}, semantic_type={niveau_etude_var.semantic_type}"
+        )
         checks_passed += 1
     else:
         print("❌ Variable 'niveau_etude' non trouvée dans le dictionnaire")
@@ -190,7 +196,9 @@ def validate_profiling() -> None:
     print(f"   • {data_dict.n_rows} observations")
     print(f"   • {data_dict.n_columns} variables")
     print(f"   • {len(profile['constant_columns'])} colonne(s) constante(s)")
-    print(f"   • {sum(1 for pct in profile['missing_pct'].values() if pct > 0)} variable(s) avec manquants")
+    print(
+        f"   • {sum(1 for pct in profile['missing_pct'].values() if pct > 0)} variable(s) avec manquants"
+    )
 
     print(f"\n🧪 Tests de validation : {checks_passed}/{checks_total} réussis")
 

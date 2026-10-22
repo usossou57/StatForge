@@ -16,9 +16,7 @@ from pathlib import Path
 _SCRIPTS_DIR = Path(__file__).parent / "scripts"
 
 
-def call_r_script(
-    script_name: str, payload: dict, timeout: int = 60
-) -> dict:
+def call_r_script(script_name: str, payload: dict, timeout: int = 60) -> dict:
     """Exécute un script R avec les données fournies en JSON.
 
     Écrit le payload dans un fichier JSON temporaire, appelle le script R

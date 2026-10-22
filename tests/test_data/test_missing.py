@@ -31,7 +31,9 @@ def test_detect_missing_cas_nominal(df_with_missing: pd.DataFrame) -> None:
     """Test de détection des manquants."""
     result = detect_missing(df_with_missing)
 
-    assert result["total_missing"] == 3  # 1 nan age, 1 nan score, 1 nan groupe, + les codes ne sont pas comptés ici
+    assert (
+        result["total_missing"] == 3
+    )  # 1 nan age, 1 nan score, 1 nan groupe, + les codes ne sont pas comptés ici
     assert result["pct_missing"] > 0
     assert "age" in result["by_column"]
     assert result["by_column"]["age"]["count"] == 1
@@ -86,13 +88,13 @@ def test_recode_missing_colonne_inexistante(df_with_missing: pd.DataFrame) -> No
 def test_impute_simple_mean(df_with_missing: pd.DataFrame) -> None:
     """Test d'imputation par la moyenne."""
     _df_new, step = impute_simple(df_with_missing, "age", "mean")
-    
+
     # La moyenne de [25, 30, 40] est 31.666...
     # Le nan et le -99 sont toujours là car on n'a pas fait de recode_missing avant
     # Mais testons sur une colonne sans codes spéciaux pour la moyenne
     df_clean = pd.DataFrame({"val": [10.0, 20.0, np.nan, 40.0]})
     df_imputed, step = impute_simple(df_clean, "val", "mean")
-    
+
     assert not pd.isna(df_imputed.loc[2, "val"])
     assert df_imputed.loc[2, "val"] == pytest.approx(70.0 / 3.0)
     assert step.operation == "impute_simple"
@@ -103,7 +105,7 @@ def test_impute_simple_median(df_with_missing: pd.DataFrame) -> None:
     """Test d'imputation par la médiane."""
     df_clean = pd.DataFrame({"val": [10.0, 20.0, np.nan, 40.0, 50.0]})
     df_imputed, _step = impute_simple(df_clean, "val", "median")
-    
+
     assert df_imputed.loc[2, "val"] == pytest.approx(30.0)
 
 
@@ -111,7 +113,7 @@ def test_impute_simple_mode(df_with_missing: pd.DataFrame) -> None:
     """Test d'imputation par le mode."""
     df_clean = pd.DataFrame({"val": ["A", "A", "B", np.nan]})
     df_imputed, _step = impute_simple(df_clean, "val", "mode")
-    
+
     assert df_imputed.loc[3, "val"] == "A"
 
 
@@ -119,7 +121,7 @@ def test_impute_simple_constant(df_with_missing: pd.DataFrame) -> None:
     """Test d'imputation par une valeur constante."""
     df_clean = pd.DataFrame({"val": [1.0, 2.0, np.nan]})
     df_imputed, step = impute_simple(df_clean, "val", "constant", value=0.0)
-    
+
     assert df_imputed.loc[2, "val"] == 0.0
     assert step.params["value"] == 0.0
 
@@ -134,7 +136,9 @@ def test_impute_simple_constant_sans_value(df_with_missing: pd.DataFrame) -> Non
 def test_impute_simple_strategie_invalide(df_with_missing: pd.DataFrame) -> None:
     """Test d'imputation avec une stratégie invalide."""
     df_clean = pd.DataFrame({"val": [1.0, np.nan]})
-    with pytest.raises(InvalidMethodInputError, match="Stratégie d'imputation invalide"):
+    with pytest.raises(
+        InvalidMethodInputError, match="Stratégie d'imputation invalide"
+    ):
         impute_simple(df_clean, "val", "knn")
 
 

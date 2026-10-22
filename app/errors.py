@@ -27,7 +27,7 @@ class DependencyMissingError(StatisticalIDEError):
             cmd = f"uv add --optional {extra} {package}"
         else:
             cmd = f"uv add {package}"
-            
+
         message = (
             f"La dépendance '{package}' est requise pour cette fonctionnalité "
             f"mais n'est pas installée.\n"
@@ -45,5 +45,8 @@ class InvalidMethodInputError(StatisticalIDEError):
     données constantes, etc.
     """
 
-    def __init__(self, message: str = "Les données fournies ne sont pas valides pour cette méthode.") -> None:
+    def __init__(
+        self,
+        message: str = "Les données fournies ne sont pas valides pour cette méthode.",
+    ) -> None:
         super().__init__(message)

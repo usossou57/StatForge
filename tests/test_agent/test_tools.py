@@ -1,13 +1,10 @@
 """Tests pour les schémas d'outils et l'exécuteur."""
 
-from typing import Any
-
 import numpy as np
 import pandas as pd
 import pytest
 
 from app.agent.tools import TOOL_SCHEMAS, execute_tool
-from app.diagnostics.models import DiagnosticFinding
 from app.results.models import AnalysisResult
 
 
@@ -15,13 +12,15 @@ from app.results.models import AnalysisResult
 def sample_df() -> pd.DataFrame:
     """Crée un DataFrame de test."""
     np.random.seed(42)
-    return pd.DataFrame({
-        "y": np.random.randn(100),
-        "x1": np.random.randn(100),
-        "x2": np.random.randn(100),
-        "outcome": np.random.choice([0, 1], size=100),
-        "group": np.random.choice(["A", "B", "C"], size=100),
-    })
+    return pd.DataFrame(
+        {
+            "y": np.random.randn(100),
+            "x1": np.random.randn(100),
+            "x2": np.random.randn(100),
+            "outcome": np.random.choice([0, 1], size=100),
+            "group": np.random.choice(["A", "B", "C"], size=100),
+        }
+    )
 
 
 @pytest.fixture

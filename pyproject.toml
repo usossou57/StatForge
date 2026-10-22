@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "formulaic>=1.2.2",
     "groq>=1.7.0",
     "jinja2>=3.1.6",
     "lxml>=6.1.3",
@@ -12,12 +13,17 @@ dependencies = [
     "numpy>=2.4.6",
     "openpyxl>=3.1.5",
     "pandas>=3.0.5",
+    "patsy>=1.0.3",
     "plotly>=7.1.0",
     "pyarrow>=25.0.1",
     "pyreadstat>=1.3.6",
+    "scipy>=1.17.1",
     "seaborn>=0.13.2",
     "sqlalchemy>=2.1.3",
+    "statsmodels>=0.15.0",
     "streamlit>=1.64.0",
+    "pingouin>=0.5.5",
+    "scikit-learn>=1.9.1",
 ]
 
 [project.scripts]
@@ -43,3 +49,10 @@ pythonpath = ["."]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
 ]
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["scipy.*", "statsmodels.*", "pingouin.*", "firthlogist.*"]
+ignore_missing_imports = true

@@ -25,10 +25,7 @@ class CodegenRegistrationError(StatisticalIDEError):
     """Erreur levée lors d'un enregistrement invalide dans le registre de codegen."""
 
 
-
-def register_codegen(
-    method_id: str, fn: Callable[[dict[str, Any]], str]
-) -> None:
+def register_codegen(method_id: str, fn: Callable[[dict[str, Any]], str]) -> None:
     """Enregistre une fonction de génération de code pour une méthode.
 
     Args:
@@ -98,8 +95,7 @@ def _validate_required_params(
     missing = [k for k in required if k not in params]
     if missing:
         raise ValueError(
-            f"Paramètres manquants pour '{method}' : "
-            f"{', '.join(missing)}."
+            f"Paramètres manquants pour '{method}' : {', '.join(missing)}."
         )
 
 
@@ -186,7 +182,7 @@ def _gen_logistic_regression(params: dict[str, Any]) -> str:
         ref_line = (
             f'    df["{outcome}"] = df["{outcome}"].cat.reorder_categories(\n'
             f'        df["{outcome}"].cat.categories.tolist()\n'
-            f'    )\n'
+            f"    )\n"
             f'    # Catégorie de référence : "{reference_category}"\n'
         )
     return textwrap.dedent(f"""\
@@ -239,9 +235,7 @@ def _gen_chi_square(params: dict[str, Any]) -> str:
     Returns:
         Script Python reproductible.
     """
-    _validate_required_params(
-        params, ["dataset_path", "var1", "var2"], "chi_square"
-    )
+    _validate_required_params(params, ["dataset_path", "var1", "var2"], "chi_square")
     dataset_path = params["dataset_path"]
     var1 = params["var1"]
     var2 = params["var2"]
@@ -299,9 +293,7 @@ def _gen_t_test(params: dict[str, Any]) -> str:
     Returns:
         Script Python reproductible.
     """
-    _validate_required_params(
-        params, ["dataset_path", "var1", "var2"], "t_test"
-    )
+    _validate_required_params(params, ["dataset_path", "var1", "var2"], "t_test")
     dataset_path = params["dataset_path"]
     var1 = params["var1"]
     var2 = params["var2"]
@@ -372,9 +364,7 @@ def _gen_anova(params: dict[str, Any]) -> str:
     Returns:
         Script Python reproductible.
     """
-    _validate_required_params(
-        params, ["dataset_path", "outcome", "groups"], "anova"
-    )
+    _validate_required_params(params, ["dataset_path", "outcome", "groups"], "anova")
     dataset_path = params["dataset_path"]
     outcome = params["outcome"]
     groups = params["groups"]

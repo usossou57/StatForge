@@ -20,11 +20,13 @@ def mock_llm_provider() -> MagicMock:
 def sample_df() -> pd.DataFrame:
     """Crée un DataFrame de test."""
     np.random.seed(42)
-    return pd.DataFrame({
-        "y": np.random.randn(50),
-        "x1": np.random.randn(50),
-        "x2": np.random.randn(50),
-    })
+    return pd.DataFrame(
+        {
+            "y": np.random.randn(50),
+            "x1": np.random.randn(50),
+            "x2": np.random.randn(50),
+        }
+    )
 
 
 def test_conversation_message_creation() -> None:
@@ -108,6 +110,7 @@ def test_orchestrator_with_tool_call(
     assert result.analysis_results[0].method == "linear_regression"
 
 
+
 def test_orchestrator_tool_error_handling(
     mock_llm_provider: MagicMock, sample_df: pd.DataFrame
 ) -> None:
@@ -134,11 +137,12 @@ def test_orchestrator_tool_error_handling(
 
     mock_llm_provider.complete.side_effect = [first_response, second_response]
 
-    result = orchestrator.process_user_message(
-        "Fais une régression", df=sample_df
-    )
+    result = orchestrator.process_user_message("Fais une régression", df=sample_df)
 
-    assert "nonexistent" in result.final_response or "erreur" in result.final_response.lower()
+    assert (
+        "nonexistent" in result.final_response
+        or "erreur" in result.final_response.lower()
+    )
     assert result.tool_calls_made == 1
 
 
@@ -227,11 +231,11 @@ def test_orchestrator_serialize_analysis_result(mock_llm_provider: MagicMock) ->
     assert "0.5" in serialized  # estimate
     assert "0.001" in serialized  # p-value
 
+
 # ──────────────────────────────────────────────────────────────────────
 # Tests pour propose_correction et execute_confirmed_action (Phase 9)
 # ──────────────────────────────────────────────────────────────────────
 
-import numpy as np
 import pandas as pd
 
 from app.agent.orchestrator import execute_confirmed_action, propose_correction
@@ -258,11 +262,13 @@ def sample_plan() -> AnalysisPlan:
 def sample_df_for_correction() -> pd.DataFrame:
     """Crée un DataFrame pour tester execute_confirmed_action."""
     np.random.seed(42)
-    return pd.DataFrame({
-        "outcome": np.random.choice([0, 1], size=100),
-        "x1": np.random.randn(100),
-        "x2": np.random.randn(100),
-    })
+    return pd.DataFrame(
+        {
+            "outcome": np.random.choice([0, 1], size=100),
+            "x1": np.random.randn(100),
+            "x2": np.random.randn(100),
+        }
+    )
 
 
 def test_propose_correction_returns_none_on_clean_diagnostics(

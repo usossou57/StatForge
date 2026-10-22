@@ -5,8 +5,6 @@ paramétriques et non paramétriques. Chaque diagnostic est calculé par du
 code déterministe, jamais par un LLM (V1 §2).
 """
 
-from typing import Any
-
 import numpy as np
 import pandas as pd
 from scipy import stats

@@ -14,8 +14,8 @@ Contraintes respectées :
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -23,10 +23,10 @@ import pandas as pd
 
 from app.results.models import AnalysisResult
 
-
 # ──────────────────────────────────────────────────────────────────────
 # Modèle de projet d'analyse
 # ──────────────────────────────────────────────────────────────────────
+
 
 @dataclass
 class AnalysisProject:
@@ -84,7 +84,7 @@ class AnalysisProject:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "AnalysisProject":
+    def from_dict(cls, data: dict[str, Any]) -> AnalysisProject:
         """Désérialise un projet depuis un dictionnaire."""
         return cls(**data)
 
@@ -92,6 +92,7 @@ class AnalysisProject:
 # ──────────────────────────────────────────────────────────────────────
 # Construction d'un projet depuis une analyse exécutée
 # ──────────────────────────────────────────────────────────────────────
+
 
 def build_project_from_analysis(
     result: AnalysisResult,
@@ -119,7 +120,7 @@ def build_project_from_analysis(
         AnalysisProject prêt à être sauvegardé.
     """
     if project_id is None:
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         project_id = f"statforge_{timestamp}"
 
     # ── CORRECTION : Extraction robuste des infos (avec fallback) ──────────
@@ -142,7 +143,7 @@ def build_project_from_analysis(
         confidence = "high"
         rationale = "Replay of saved analysis"
         assumptions_to_check = []
-        
+
         for var_name, var_info in result.variables.items():
             role = var_info.get("role", "")
             name = var_info.get("name", var_name)
@@ -154,12 +155,14 @@ def build_project_from_analysis(
     # Sérialisation des diagnostics (objets → dicts)
     diagnostics_serialized = []
     for diag in result.diagnostics:
-        diagnostics_serialized.append({
-            "code": diag.code,
-            "severity": diag.severity.value,
-            "message": diag.message,
-            "value": diag.value if hasattr(diag, "value") else None,
-        })
+        diagnostics_serialized.append(
+            {
+                "code": diag.code,
+                "severity": diag.severity.value,
+                "message": diag.message,
+                "value": diag.value if hasattr(diag, "value") else None,
+            }
+        )
 
     # Sérialisation des prétraitements
     preprocessing_serialized = []
@@ -173,7 +176,7 @@ def build_project_from_analysis(
 
     return AnalysisProject(
         project_id=project_id,
-        created_at=datetime.now(timezone.utc).isoformat(),
+        created_at=datetime.now(UTC).isoformat(),
         dataset_name=dataset_name,
         dataset_hash=dataset_hash,
         dataset_rows=dataset_rows,
@@ -207,6 +210,7 @@ def build_project_from_analysis(
 # Sauvegarde d'un projet
 # ──────────────────────────────────────────────────────────────────────
 
+
 def save_analysis(
     project: AnalysisProject,
     output_dir: str = "projects",
@@ -235,13 +239,14 @@ def save_analysis(
         project.project_path = str(file_path)
         return str(file_path)
 
-    except IOError as e:
-        raise IOError(f"Impossible de sauvegarder le projet : {e}") from e
+    except OSError as e:
+        raise OSError(f"Impossible de sauvegarder le projet : {e}") from e
 
 
 # ─────────────────────────────────────────────────────────────────────
 # Chargement d'un projet
 # ──────────────────────────────────────────────────────────────────────
+
 
 def load_project(project_path: str) -> AnalysisProject:
     """Charge un projet d'analyse depuis un fichier JSON.
@@ -271,6 +276,7 @@ def load_project(project_path: str) -> AnalysisProject:
 # ─────────────────────────────────────────────────────────────────────
 # Rejeu d'une analyse (T9 : via execute_tool)
 # ──────────────────────────────────────────────────────────────────────
+
 
 def replay_analysis(
     project: AnalysisProject,
@@ -305,7 +311,7 @@ def replay_analysis(
         if project.outcome_variable:
             all_vars.append(project.outcome_variable)
         all_vars.extend(project.predictor_variables)
-        
+
         if len(all_vars) < 2:
             raise ValueError(
                 f"Le projet {project.project_id} n'a pas assez de variables "
@@ -361,6 +367,7 @@ def replay_analysis(
 # Liste des projets sauvegardés
 # ──────────────────────────────────────────────────────────────────────
 
+
 def list_projects(project_dir: str = "projects") -> list[dict[str, Any]]:
     """Liste tous les projets sauvegardés dans un répertoire.
 
@@ -378,14 +385,16 @@ def list_projects(project_dir: str = "projects") -> list[dict[str, Any]]:
     for file_path in sorted(path.glob("*.json")):
         try:
             project = load_project(str(file_path))
-            projects.append({
-                "project_id": project.project_id,
-                "created_at": project.created_at,
-                "dataset_name": project.dataset_name,
-                "method": project.method,
-                "research_question": project.research_question,
-                "file_path": str(file_path),
-            })
+            projects.append(
+                {
+                    "project_id": project.project_id,
+                    "created_at": project.created_at,
+                    "dataset_name": project.dataset_name,
+                    "method": project.method,
+                    "research_question": project.research_question,
+                    "file_path": str(file_path),
+                }
+            )
         except Exception:
             # Ignore les fichiers corrompus
             continue

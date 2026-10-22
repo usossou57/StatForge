@@ -68,11 +68,13 @@ def test_check_separation_complete(fixtures_dir: Path) -> None:
 def test_check_separation_clean() -> None:
     """Teste qu'aucun diagnostic n'est déclenché sur données propres."""
     # Dataset sans séparation
-    df = pd.DataFrame({
-        "outcome": [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-        "x1": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        "x2": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    })
+    df = pd.DataFrame(
+        {
+            "outcome": [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+            "x1": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            "x2": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        }
+    )
     model = smf.logit("outcome ~ x1 + x2", data=df).fit(disp=0)
     diagnostics = check_separation(model)
 
@@ -100,11 +102,13 @@ def test_check_influential_observations(fixtures_dir: Path) -> None:
 
 def test_check_influential_observations_clean() -> None:
     """Teste qu'aucun diagnostic n'est déclenché sur données propres."""
-    df = pd.DataFrame({
-        "y": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-        "x1": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        "x2": [2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
-    })
+    df = pd.DataFrame(
+        {
+            "y": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            "x1": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            "x2": [2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
+        }
+    )
     X = df[["x1", "x2"]]
     X = sm.add_constant(X)
     y = df["y"]
@@ -129,11 +133,13 @@ def test_check_sample_size_logistic_insufficient(fixtures_dir: Path) -> None:
 
 def test_check_sample_size_logistic_sufficient() -> None:
     """Teste qu'aucun diagnostic n'est déclenché avec taille suffisante."""
-    df = pd.DataFrame({
-        "y": [0, 1] * 50,
-        "x1": range(100),
-        "x2": range(100, 200),
-    })
+    df = pd.DataFrame(
+        {
+            "y": [0, 1] * 50,
+            "x1": range(100),
+            "x2": range(100, 200),
+        }
+    )
     diagnostics = check_sample_size(df, method="logistic_regression", n_predictors=2)
 
     # 100 obs >= 10 × 2 = 20 recommandé
@@ -142,12 +148,14 @@ def test_check_sample_size_logistic_sufficient() -> None:
 
 def test_check_sample_size_linear_insufficient() -> None:
     """Teste la détection de taille d'échantillon insuffisante pour linéaire."""
-    df = pd.DataFrame({
-        "y": [1, 2, 3, 4, 5],
-        "x1": [1, 2, 3, 4, 5],
-        "x2": [2, 3, 4, 5, 6],
-        "x3": [3, 4, 5, 6, 7],
-    })
+    df = pd.DataFrame(
+        {
+            "y": [1, 2, 3, 4, 5],
+            "x1": [1, 2, 3, 4, 5],
+            "x2": [2, 3, 4, 5, 6],
+            "x3": [3, 4, 5, 6, 7],
+        }
+    )
     diagnostics = check_sample_size(df, method="linear_regression", n_predictors=3)
 
     # 5 obs < 10 × 3 = 30 recommandé

@@ -379,10 +379,16 @@ def generate_eda_report(
 
     # 3. Résumés descriptifs
     numeric_cols = df.select_dtypes(include=["number", "bool"]).columns.tolist()
-    categorical_cols = df.select_dtypes(include=["object", "category", "string"]).columns.tolist()
+    categorical_cols = df.select_dtypes(
+        include=["object", "category", "string"]
+    ).columns.tolist()
 
-    summary_result = summarize_variables(df) if (numeric_cols or categorical_cols) else None
-    summary_data = summary_result.model_metrics["tables"]["summary"] if summary_result else []
+    summary_result = (
+        summarize_variables(df) if (numeric_cols or categorical_cols) else None
+    )
+    summary_data = (
+        summary_result.model_metrics["tables"]["summary"] if summary_result else []
+    )
 
     # 4. Corrélations (uniquement si au moins 2 variables numériques)
     correlation_result = None
@@ -399,20 +405,24 @@ def generate_eda_report(
     for col in numeric_cols[:5]:
         try:
             norm_result = run_normality_tests(df, col)
-            normality_results.append({
-                "column": col,
-                "is_normal": norm_result.model_metrics["is_normal"],
-                "p_values": norm_result.p_values,
-            })
+            normality_results.append(
+                {
+                    "column": col,
+                    "is_normal": norm_result.model_metrics["is_normal"],
+                    "p_values": norm_result.p_values,
+                }
+            )
         except Exception:  # noqa: BLE001, S110
             pass
 
         try:
             outlier_result = detect_outliers(df, [col], method="iqr")
-            outlier_results.append({
-                "column": col,
-                "n_outliers": outlier_result.estimates["n_outliers"],
-            })
+            outlier_results.append(
+                {
+                    "column": col,
+                    "n_outliers": outlier_result.estimates["n_outliers"],
+                }
+            )
         except Exception:  # noqa: BLE001, S110
             pass
 

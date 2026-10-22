@@ -107,7 +107,9 @@ def test_describe_variable_avec_manquants() -> None:
     assert desc["mean"] == 15.0
 
 
-def test_build_data_dictionary_cas_nominal(sample_df: pd.DataFrame, sample_csv_path: str) -> None:
+def test_build_data_dictionary_cas_nominal(
+    sample_df: pd.DataFrame, sample_csv_path: str
+) -> None:
     data_dict = build_data_dictionary(sample_df, "test_dataset", sample_csv_path)
     assert isinstance(data_dict, DataDictionary)
     assert data_dict.dataset_name == "test_dataset"
@@ -121,7 +123,9 @@ def test_build_data_dictionary_cas_nominal(sample_df: pd.DataFrame, sample_csv_p
     assert age_var.semantic_type == "count"
 
 
-def test_build_data_dictionary_hash_calcule(sample_df: pd.DataFrame, sample_csv_path: str) -> None:
+def test_build_data_dictionary_hash_calcule(
+    sample_df: pd.DataFrame, sample_csv_path: str
+) -> None:
     data_dict1 = build_data_dictionary(sample_df, "test", sample_csv_path)
     data_dict2 = build_data_dictionary(sample_df, "test", sample_csv_path)
     assert data_dict1.file_hash == data_dict2.file_hash

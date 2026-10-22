@@ -51,9 +51,7 @@ class TransformStep:
     n_rows_before: int
     n_rows_after: int
     code: str
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(UTC)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 @dataclass
@@ -107,9 +105,7 @@ class TransformLog:
         data = json.loads(json_str)
         steps = []
         for step_dict in data["steps"]:
-            step_dict["created_at"] = _iso_to_datetime(
-                step_dict["created_at"]
-            )
+            step_dict["created_at"] = _iso_to_datetime(step_dict["created_at"])
             steps.append(TransformStep(**step_dict))
         return cls(steps=steps)
 
@@ -138,15 +134,15 @@ class TransformLog:
         # Construction du script sans indentation parasite
         lines = [
             "#!/usr/bin/env python3",
-            f'"""Script reproductible — Journal de transformations.',
-            f"Généré automatiquement par StatForge (TransformLog).",
+            '"""Script reproductible — Journal de transformations.',
+            "Généré automatiquement par StatForge (TransformLog).",
             f"Rejoue {len(self.steps)} étape(s) de transformation.",
-            f'"""',
+            '"""',
             "import pandas as pd",
             "",
             "",
             "def main() -> None:",
-            '    # TODO: Remplacer par le chemin réel du fichier de données',
+            "    # TODO: Remplacer par le chemin réel du fichier de données",
             '    df = pd.read_csv("donnees.csv")',
             '    print(f"Dataset initial : {df.shape[0]} lignes, {df.shape[1]} colonnes")',
             "",

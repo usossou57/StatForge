@@ -22,16 +22,13 @@ from scipy import stats
 from statsmodels.stats.proportion import proportion_confint, proportions_ztest
 
 from app.diagnostics.checks_inference import (
-    check_equal_variances,
     check_expected_counts,
     check_group_sizes,
 )
-from app.diagnostics.models import DiagnosticFinding
+from app.diagnostics.models import DiagnosticFinding, Severity
 from app.errors import InvalidMethodInputError
-from app.results.codegen import register_codegen
 from app.results.models import AnalysisResult
 from app.statistics.registry import MethodSpec, register_method
-
 
 # ============================================================================
 # Helpers internes
@@ -123,7 +120,7 @@ def run_paired_t_test(
     statistic, p_value = stats.ttest_rel(before, after)
 
     # Taille d'effet : d de Cohen pour échantillons appariés
-    diff = after - before
+    diff = after - before   # type: ignore[operator]
     mean_diff = diff.mean()
     std_diff = diff.std(ddof=1)
     cohens_d = mean_diff / std_diff if std_diff > 0 else 0.0
@@ -136,7 +133,7 @@ def run_paired_t_test(
 
     # Diagnostics
     diagnostics: list[DiagnosticFinding] = []
-    diagnostics.extend(check_group_sizes([diff], min_size=10))
+    diagnostics.extend(check_group_sizes([diff], min_size=10))  # type: ignore[list-item]
 
     # Test de normalité des différences (Shapiro-Wilk si n < 5000)
     if len(diff) >= 3 and len(diff) <= 5000:
@@ -145,7 +142,7 @@ def run_paired_t_test(
             diagnostics.append(
                 DiagnosticFinding(
                     code="NON_NORMAL_DISTRIBUTION",
-                    severity="warning",
+                    severity=Severity.WARNING,
                     message=(
                         f"Les différences entre les mesures ne suivent pas "
                         f"une distribution normale (test de Shapiro-Wilk, "
@@ -187,9 +184,7 @@ print(f"t = {{statistic:.4f}}, p = {{p_value:.4f}}")
             "cohens_d": float(cohens_d),
         },
         standard_errors={"mean_difference": float(se_diff)},
-        confidence_intervals={
-            "mean_difference": [float(ci_low), float(ci_high)]
-        },
+        confidence_intervals={"mean_difference": [float(ci_low), float(ci_high)]},
         p_values={"overall": float(p_value)},
         model_metrics={
             "method_family": "inference",
@@ -320,9 +315,7 @@ print(f"t = {{statistic:.4f}}, p = {{p_value:.4f}}")
             "cohens_d": float(cohens_d),
         },
         standard_errors={"mean_difference": float(se_diff)},
-        confidence_intervals={
-            "mean_difference": [float(ci_low), float(ci_high)]
-        },
+        confidence_intervals={"mean_difference": [float(ci_low), float(ci_high)]},
         p_values={"overall": float(p_value)},
         model_metrics={
             "method_family": "inference",
@@ -394,8 +387,8 @@ def run_one_sample_t_test(
     statistic, p_value = stats.ttest_1samp(values, mu0)
 
     # Statistiques descriptives
-    mean_val = values.mean()
-    std_val = values.std(ddof=1)
+    mean_val = values.mean()    # type: ignore[union-attr]
+    std_val = values.std(ddof=1)    # type: ignore[union-attr]
     se_val = std_val / np.sqrt(len(values))
 
     # d de Cohen
@@ -408,7 +401,7 @@ def run_one_sample_t_test(
 
     # Diagnostics
     diagnostics: list[DiagnosticFinding] = []
-    diagnostics.extend(check_group_sizes([values], min_size=10))
+    diagnostics.extend(check_group_sizes([values], min_size=10))    # type: ignore[list-item]
 
     # Test de normalité (Shapiro-Wilk si n < 5000)
     if len(values) >= 3 and len(values) <= 5000:
@@ -417,7 +410,7 @@ def run_one_sample_t_test(
             diagnostics.append(
                 DiagnosticFinding(
                     code="NON_NORMAL_DISTRIBUTION",
-                    severity="warning",
+                    severity=Severity.WARNING,
                     message=(
                         f"La variable ne suit pas une distribution normale "
                         f"(test de Shapiro-Wilk, p={p_normality:.4f}). "
@@ -550,12 +543,14 @@ def run_proportion_test(
         p_hat = successes / n_total
 
         # IC 95% (méthode de Wilson)
-        ci_low, ci_high = proportion_confint(successes, n_total, alpha=0.05, method="wilson")
+        ci_low, ci_high = proportion_confint(
+            successes, n_total, alpha=0.05, method="wilson"
+        )
 
         # Diagnostics
         diagnostics: list[DiagnosticFinding] = []
         if n_total < 10:
-            diagnostics.extend(check_group_sizes([[1] * n_total], min_size=10))
+            diagnostics.extend(check_group_sizes([[1] * n_total], min_size=10)) # type: ignore[list-item]
 
         # Code reproductible
         generated_code = f"""# Test de proportion
@@ -564,7 +559,7 @@ from statsmodels.stats.proportion import proportions_ztest, proportion_confint
 
 df = pd.read_csv("votre_fichier.csv")
 df_clean = df.dropna(subset=["{column}"])
-successes = (df_clean["{column}"] == {repr(success_value)}).sum()
+successes = (df_clean["{column}"] == {success_value!r}).sum()
 n_total = len(df_clean)
 statistic, p_value = proportions_ztest(successes, n_total, value={p0})
 ci_low, ci_high = proportion_confint(successes, n_total, alpha=0.05, method="wilson")
@@ -598,7 +593,9 @@ print(f"Proportion = {{successes/n_total:.4f}}, p = {{p_value:.4f}}")
             warnings=[],
             assumptions_checked=[
                 "Observations indépendantes",
-                "Effectifs suffisants pour l'approximation normale" if test_type == "z" else "Test exact",
+                "Effectifs suffisants pour l'approximation normale"
+                if test_type == "z"
+                else "Test exact",
             ],
             generated_code=generated_code,
             execution_log=[f"Test de proportion ({test_type}) exécuté avec succès"],
@@ -615,9 +612,13 @@ print(f"Proportion = {{successes/n_total:.4f}}, p = {{p_value:.4f}}")
             )
 
         group1_name, group2_name = sorted(group_values)
-        successes1 = (df_clean[df_clean[group] == group1_name][column] == success_value).sum()
+        successes1 = (
+            df_clean[df_clean[group] == group1_name][column] == success_value
+        ).sum()
         n1 = (df_clean[group] == group1_name).sum()
-        successes2 = (df_clean[df_clean[group] == group2_name][column] == success_value).sum()
+        successes2 = (
+            df_clean[df_clean[group] == group2_name][column] == success_value
+        ).sum()
         n2 = (df_clean[group] == group2_name).sum()
 
         if n1 == 0 or n2 == 0:
@@ -634,12 +635,16 @@ print(f"Proportion = {{successes/n_total:.4f}}, p = {{p_value:.4f}}")
         p2_hat = successes2 / n2
 
         # IC 95% pour chaque proportion
-        ci1_low, ci1_high = proportion_confint(successes1, n1, alpha=0.05, method="wilson")
-        ci2_low, ci2_high = proportion_confint(successes2, n2, alpha=0.05, method="wilson")
+        ci1_low, ci1_high = proportion_confint(
+            successes1, n1, alpha=0.05, method="wilson"
+        )
+        ci2_low, ci2_high = proportion_confint(
+            successes2, n2, alpha=0.05, method="wilson"
+        )
 
         # Diagnostics
         diagnostics = []
-        diagnostics.extend(check_group_sizes([[1] * n1, [1] * n2], min_size=10))
+        diagnostics.extend(check_group_sizes([[1] * n1, [1] * n2], min_size=10))    # type: ignore[list-item]
 
         # Code reproductible
         generated_code = f"""# Test de comparaison de deux proportions
@@ -649,9 +654,9 @@ from statsmodels.stats.proportion import proportions_ztest
 
 df = pd.read_csv("votre_fichier.csv")
 df_clean = df.dropna(subset=["{column}", "{group}"])
-successes1 = (df_clean[df_clean["{group}"] == "{group1_name}"]["{column}"] == {repr(success_value)}).sum()
+successes1 = (df_clean[df_clean["{group}"] == "{group1_name}"]["{column}"] == {success_value!r}).sum()
 n1 = (df_clean["{group}"] == "{group1_name}").sum()
-successes2 = (df_clean[df_clean["{group}"] == "{group2_name}"]["{column}"] == {repr(success_value)}).sum()
+successes2 = (df_clean[df_clean["{group}"] == "{group2_name}"]["{column}"] == {success_value!r}).sum()
 n2 = (df_clean["{group}"] == "{group2_name}").sum()
 count = np.array([successes1, successes2])
 nobs = np.array([n1, n2])
@@ -700,7 +705,9 @@ print(f"z = {{statistic:.4f}}, p = {{p_value:.4f}}")
                 "Effectifs suffisants pour l'approximation normale",
             ],
             generated_code=generated_code,
-            execution_log=["Test de comparaison de deux proportions exécuté avec succès"],
+            execution_log=[
+                "Test de comparaison de deux proportions exécuté avec succès"
+            ],
             software_versions=_get_software_versions(),
         )
 
@@ -921,7 +928,9 @@ print(f"F = {{statistic:.4f}}, p = {{p_value:.4f}}")
             "method_family": "inference",
             "test_name": test_name,
             "n_groups": len(groups),
-            "group_sizes": {str(g): len(grp) for g, grp in zip(sorted(unique_groups), groups)},
+            "group_sizes": {
+                str(g): len(grp) for g, grp in zip(sorted(unique_groups), groups)
+            },
             "n_obs_used": len(df_clean),
             "n_obs_dropped": n_dropped,
         },

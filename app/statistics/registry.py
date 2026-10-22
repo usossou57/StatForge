@@ -8,8 +8,9 @@ modulaire et extensible.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 from app.errors import StatisticalIDEError
 
@@ -55,7 +56,6 @@ _METHOD_REGISTRY: dict[str, tuple[MethodSpec, Callable[..., Any]]] = {}
 
 class MethodRegistrationError(StatisticalIDEError):
     """Erreur levée lors d'une tentative d'enregistrement invalide."""
-    pass
 
 
 def register_method(spec: MethodSpec, func: Callable[..., Any]) -> None:
@@ -115,7 +115,7 @@ def list_methods(family: str | None = None) -> list[MethodSpec]:
 
 def _register_v1_methods() -> None:
     """Enregistre les méthodes historiques de la V1 dans le registre.
-    
+
     Cette fonction est appelée au démarrage de l'application pour assurer
     la rétrocompatibilité avec les méthodes déjà implémentées.
     """
@@ -125,23 +125,122 @@ def _register_v1_methods() -> None:
         # Ici nous utilisons des stubs (fonctions vides) pour que le registre
         # puisse être initialisé même si les modules V1 ne sont pas encore
         # refactorisés.
-        from app.statistics import provider as v1_provider
-        
+        from app.statistics.regression import (
+            compare_models,
+            run_linear_regression,
+            run_logistic_regression,
+            run_multinomial_logistic_regression,
+        )
+        from app.statistics.tests_classiques import (
+            run_anova,
+            run_chi_square,
+            run_t_test,
+        )
+
+        _v1_callables: dict[str, Callable[..., Any]] = {
+            "chi_square": run_chi_square,
+            "t_test": run_t_test,
+            "anova": run_anova,
+            "linear_regression": run_linear_regression,
+            "logistic_regression": run_logistic_regression,
+            "multinomial_logistic_regression": run_multinomial_logistic_regression,
+            "compare_models": compare_models,
+        }
+
         v1_methods_config = [
-            ("chi_square", "Test du Khi-deux d'indépendance", "inférence", ["catégorielle"], ["catégorielle"], "scipy.stats.chi2_contingency", "stats::chisq.test"),
-            ("t_test", "Test t de Student", "inférence", ["quantitative"], ["binaire"], "scipy.stats.ttest_ind", "stats::t.test"),
-            ("anova", "Analyse de variance (ANOVA)", "inférence", ["quantitative"], ["catégorielle"], "scipy.stats.f_oneway", "stats::aov"),
-            ("linear_regression", "Régression linéaire (OLS)", "régression", ["quantitative"], ["quantitative", "binaire", "catégorielle"], "statsmodels.api.OLS", "stats::lm"),
-            ("logistic_regression", "Régression logistique binaire", "régression", ["binaire"], ["quantitative", "binaire", "catégorielle"], "statsmodels.api.Logit", "stats::glm"),
-            ("multinomial_logistic_regression", "Régression logistique multinomiale", "régression", ["catégorielle"], ["quantitative", "binaire", "catégorielle"], "statsmodels.api.MNLogit", "nnet::multinom"),
-            ("firth_logistic", "Régression logistique de Firth", "régression", ["binaire"], ["quantitative", "binaire", "catégorielle"], "firth", "logistf::logistf"),
-            ("compare_models", "Comparaison de modèles (AIC/BIC/LRT)", "diagnostic", [], [], "statsmodels", "stats::anova"),
+            (
+                "chi_square",
+                "Test du Khi-deux d'indépendance",
+                "inférence",
+                ["catégorielle"],
+                ["catégorielle"],
+                "scipy.stats.chi2_contingency",
+                "stats::chisq.test",
+            ),
+            (
+                "t_test",
+                "Test t de Student",
+                "inférence",
+                ["quantitative"],
+                ["binaire"],
+                "scipy.stats.ttest_ind",
+                "stats::t.test",
+            ),
+            (
+                "anova",
+                "Analyse de variance (ANOVA)",
+                "inférence",
+                ["quantitative"],
+                ["catégorielle"],
+                "scipy.stats.f_oneway",
+                "stats::aov",
+            ),
+            (
+                "linear_regression",
+                "Régression linéaire (OLS)",
+                "régression",
+                ["quantitative"],
+                ["quantitative", "binaire", "catégorielle"],
+                "statsmodels.api.OLS",
+                "stats::lm",
+            ),
+            (
+                "logistic_regression",
+                "Régression logistique binaire",
+                "régression",
+                ["binaire"],
+                ["quantitative", "binaire", "catégorielle"],
+                "statsmodels.api.Logit",
+                "stats::glm",
+            ),
+            (
+                "multinomial_logistic_regression",
+                "Régression logistique multinomiale",
+                "régression",
+                ["catégorielle"],
+                ["quantitative", "binaire", "catégorielle"],
+                "statsmodels.api.MNLogit",
+                "nnet::multinom",
+            ),
+            (
+                "firth_logistic",
+                "Régression logistique de Firth",
+                "régression",
+                ["binaire"],
+                ["quantitative", "binaire", "catégorielle"],
+                "firth",
+                "logistf::logistf",
+            ),
+            (
+                "compare_models",
+                "Comparaison de modèles (AIC/BIC/LRT)",
+                "diagnostic",
+                [],
+                [],
+                "statsmodels",
+                "stats::anova",
+            ),
         ]
-        
-        for method_id, label, family, out_types, pred_types, ref_impl, r_ref in v1_methods_config:
-            # Récupération de la fonction réelle si elle existe dans le provider V1
-            func = getattr(v1_provider, f"run_{method_id}", lambda *args, **kwargs: None)
-            
+
+        for (
+            method_id,
+            label,
+            family,
+            out_types,
+            pred_types,
+            ref_impl,
+            r_ref,
+        ) in v1_methods_config:
+            if method_id == "firth_logistic":
+                from app.statistics.regression import run_firth_logistic
+
+                func = run_firth_logistic
+            else:
+                func = _v1_callables.get(
+                    method_id,
+                    lambda *args, **kwargs: None,  # type: ignore[misc]
+                )
+
             spec = MethodSpec(
                 method_id=method_id,
                 label_fr=label,
@@ -155,17 +254,32 @@ def _register_v1_methods() -> None:
                 r_reference=r_ref,
                 phase=1,  # Méthodes V1
                 extra=None,
-                default_params={}
+                default_params={},
             )
-            
+
             # On ignore silencieusement si déjà enregistré (cas des redémarrages ou tests)
             if method_id not in _METHOD_REGISTRY:
                 register_method(spec, func)
-                
+
     except ImportError:
         # Si le provider V1 n'est pas encore disponible, on enregistre des stubs
         pass
 
 
+def _import_method_modules() -> None:
+    """Charge les modules statistiques pour enregistrer leurs MethodSpec (V2 §7.1)."""
+    import importlib
+    from pathlib import Path
+
+    pkg_dir = Path(__file__).resolve().parent
+    skip = {"__init__", "registry", "provider", "engine_python"}
+    for path in sorted(pkg_dir.glob("*.py")):
+        stem = path.stem
+        if stem in skip:
+            continue
+        importlib.import_module(f"app.statistics.{stem}")
+
+
 # Initialisation automatique au premier import du module
 _register_v1_methods()
+_import_method_modules()

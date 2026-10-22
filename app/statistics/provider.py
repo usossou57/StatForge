@@ -7,13 +7,14 @@ de ce Protocol.
 
 from __future__ import annotations
 
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 import pandas as pd
 
 from app.results.models import AnalysisResult
 
 
+@runtime_checkable
 class StatisticalEngineProvider(Protocol):
     """Abstraction permettant, à terme, un moteur Python et un moteur R
     interchangeables (C7/T6). Ne jamais appeler statsmodels/R directement
@@ -35,20 +36,14 @@ class StatisticalEngineProvider(Protocol):
         """Régression logistique binaire."""
         ...
 
-    def run_chi_square(
-        self, df: pd.DataFrame, var1: str, var2: str
-    ) -> AnalysisResult:
+    def run_chi_square(self, df: pd.DataFrame, var1: str, var2: str) -> AnalysisResult:
         """Test du chi-carré d'indépendance."""
         ...
 
-    def run_t_test(
-        self, df: pd.DataFrame, outcome: str, group: str
-    ) -> AnalysisResult:
+    def run_t_test(self, df: pd.DataFrame, outcome: str, group: str) -> AnalysisResult:
         """Test t de Student pour 2 groupes."""
         ...
 
-    def run_anova(
-        self, df: pd.DataFrame, outcome: str, group: str
-    ) -> AnalysisResult:
+    def run_anova(self, df: pd.DataFrame, outcome: str, group: str) -> AnalysisResult:
         """Analyse de variance (ANOVA) à un facteur."""
         ...

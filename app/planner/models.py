@@ -17,9 +17,7 @@ class AnalysisPlan(BaseModel):
     research_question: str = Field(
         description="Question de recherche reformulée de manière précise"
     )
-    outcome_variable: str = Field(
-        description="Nom de la variable cible (outcome)"
-    )
+    outcome_variable: str = Field(description="Nom de la variable cible (outcome)")
     predictor_variables: list[str] = Field(
         description="Liste des noms des variables prédictives"
     )
@@ -36,9 +34,7 @@ class AnalysisPlan(BaseModel):
     assumptions_to_check: list[str] = Field(
         description="Liste des hypothèses statistiques à vérifier"
     )
-    rationale: str = Field(
-        description="Justification du choix de la méthode"
-    )
+    rationale: str = Field(description="Justification du choix de la méthode")
     confidence: Literal["high", "medium", "low"] = Field(
         description="Niveau de confiance dans le plan (low = clarification nécessaire)"
     )

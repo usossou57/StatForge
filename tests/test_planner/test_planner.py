@@ -19,7 +19,9 @@ def sample_data_dictionary() -> DataDictionary:
         n_columns=5,
         variables={
             "age": Variable(name="age", dtype="numeric", semantic_type="continuous"),
-            "income": Variable(name="income", dtype="numeric", semantic_type="continuous"),
+            "income": Variable(
+                name="income", dtype="numeric", semantic_type="continuous"
+            ),
             "gender": Variable(
                 name="gender",
                 dtype="categorical",

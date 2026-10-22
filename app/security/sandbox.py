@@ -19,43 +19,48 @@ import sys
 import tempfile
 from typing import Any
 
-
 # Liste blanche des imports autorisés
-ALLOWED_IMPORTS: frozenset[str] = frozenset({
-    "pandas",
-    "numpy",
-    "scipy",
-    "statsmodels",
-    "matplotlib",
-    "math",
-    # Sous-modules courants
-    "pandas.api",
-    "pandas.core",
-    "numpy.linalg",
-    "numpy.random",
-    "scipy.stats",
-    "scipy.optimize",
-    "statsmodels.api",
-    "statsmodels.formula",
-    "matplotlib.pyplot",
-    "matplotlib.figure",
-})
+ALLOWED_IMPORTS: frozenset[str] = frozenset(
+    {
+        "pandas",
+        "numpy",
+        "scipy",
+        "statsmodels",
+        "matplotlib",
+        "math",
+        # Sous-modules courants
+        "pandas.api",
+        "pandas.core",
+        "numpy.linalg",
+        "numpy.random",
+        "scipy.stats",
+        "scipy.optimize",
+        "statsmodels.api",
+        "statsmodels.formula",
+        "matplotlib.pyplot",
+        "matplotlib.figure",
+    }
+)
 
 # Imports réseau interdits
-FORBIDDEN_NETWORK_IMPORTS: frozenset[str] = frozenset({
-    "socket",
-    "requests",
-    "urllib",
-    "httpx",
-    "aiohttp",
-})
+FORBIDDEN_NETWORK_IMPORTS: frozenset[str] = frozenset(
+    {
+        "socket",
+        "requests",
+        "urllib",
+        "httpx",
+        "aiohttp",
+    }
+)
 
 # Appels système dangereux
-FORBIDDEN_SYSTEM_CALLS: frozenset[str] = frozenset({
-    "os.system",
-    "subprocess",
-    "shutil.rmtree",
-})
+FORBIDDEN_SYSTEM_CALLS: frozenset[str] = frozenset(
+    {
+        "os.system",
+        "subprocess",
+        "shutil.rmtree",
+    }
+)
 
 
 def validate_generated_code(code: str) -> list[str]:
@@ -242,7 +247,7 @@ def run_sandboxed(
                     )
                     # RLIMIT_AS désactivé : pandas nécessite > 512 Mo d'espace d'adressage
                     # pour mapper ses bibliothèques C partagées (.so)
-                except (ValueError, resource.error):
+                except (OSError, ValueError):
                     # Limites ignorées si erreur (ex: valeurs trop basses)
                     pass
 

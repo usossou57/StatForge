@@ -54,7 +54,7 @@ def import_csv_chunked(
         chunks = list(
             pd.read_csv(path, chunksize=chunksize, usecols=usecols, low_memory=False)
         )
-        
+
         if not chunks:
             return pd.DataFrame()
 
@@ -92,9 +92,15 @@ def downcast_dtypes(df: pd.DataFrame) -> pd.DataFrame:
             col_max = df_opt[col].max()
 
             if col_type == np.int64:
-                if col_min >= np.iinfo(np.int8).min and col_max <= np.iinfo(np.int8).max:
+                if (
+                    col_min >= np.iinfo(np.int8).min
+                    and col_max <= np.iinfo(np.int8).max
+                ):
                     df_opt[col] = df_opt[col].astype(np.int8)
-                elif col_min >= np.iinfo(np.int16).min and col_max <= np.iinfo(np.int16).max:
+                elif (
+                    col_min >= np.iinfo(np.int16).min
+                    and col_max <= np.iinfo(np.int16).max
+                ):
                     df_opt[col] = df_opt[col].astype(np.int16)
                 else:
                     df_opt[col] = df_opt[col].astype(np.int32)
@@ -110,7 +116,6 @@ def downcast_dtypes(df: pd.DataFrame) -> pd.DataFrame:
                 ):
                     df_opt[col] = df_opt[col].astype(np.float32)
 
-
                 # Convertir en float32 si la plage le permet
                 col_min = df_opt[col].min()
                 col_max = df_opt[col].max()
@@ -121,7 +126,9 @@ def downcast_dtypes(df: pd.DataFrame) -> pd.DataFrame:
                     df_opt[col] = df_opt[col].astype(np.float32)
 
         # Conversion object ou string → category
-        elif pd.api.types.is_object_dtype(col_type) or pd.api.types.is_string_dtype(col_type):
+        elif pd.api.types.is_object_dtype(col_type) or pd.api.types.is_string_dtype(
+            col_type
+        ):
             n_unique = df_opt[col].nunique()
             n_rows = len(df_opt)
             # Convertir si le ratio cardinalité/taille est faible (< 50%)

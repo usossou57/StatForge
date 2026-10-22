@@ -14,8 +14,6 @@ Chaque méthode est enregistrée dans le registre (V2 §7.1) avec son gabarit
 de code reproductible (V2 §6.2).
 """
 
-from typing import Any
-
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -25,7 +23,6 @@ from app.diagnostics.models import DiagnosticFinding, Severity
 from app.errors import InvalidMethodInputError
 from app.results.models import AnalysisResult
 from app.statistics.registry import MethodSpec, register_method
-
 
 # ============================================================================
 # Helpers internes
@@ -81,7 +78,7 @@ def _check_tied_ranks(
 
     # Calcul des rangs avec gestion des ex-aequo
     ranks = stats.rankdata(all_values, method="average")
-    unique_ranks, counts = np.unique(ranks, return_counts=True)
+    _unique_ranks, counts = np.unique(ranks, return_counts=True)
 
     # Nombre de valeurs impliquées dans des ex-aequo
     tied_values = counts[counts > 1]
@@ -198,7 +195,7 @@ print(f"U = {{statistic:.4f}}, p = {{p_value:.4f}}")
         method="mann_whitney",
         dataset_id="",
         variables={"outcome": outcome, "group": group},
-        sample_size=int(len(df_clean)),
+        sample_size=len(df_clean),
         preprocessing=[
             f"Suppression des valeurs manquantes : {n_dropped} ligne(s) retirée(s)"
         ],
@@ -214,7 +211,7 @@ print(f"U = {{statistic:.4f}}, p = {{p_value:.4f}}")
         model_metrics={
             "method_family": "inference",
             "effect_size": {"rank_biserial": float(rank_biserial)},
-            "n_obs_used": int(len(df_clean)),
+            "n_obs_used": len(df_clean),
             "n_obs_dropped": int(n_dropped),
             "group_sizes": {str(group1_name): int(n1), str(group2_name): int(n2)},
         },
@@ -275,9 +272,11 @@ def run_wilcoxon_signed_rank(
     before = df_clean[var_before].values
     after = df_clean[var_after].values
 
-      # Test de Wilcoxon signed-rank
+    # Test de Wilcoxon signed-rank
     # method='approx' et correction=True pour correspondre exactement à R (exact=FALSE, correct=TRUE)
-    statistic, p_value = stats.wilcoxon(before, after, alternative="two-sided", method="approx", correction=True)
+    statistic, p_value = stats.wilcoxon(
+        before, after, alternative="two-sided", method="approx", correction=True
+    )
 
     # Taille d'effet : r = Z / sqrt(N)
     # Approximation de Z à partir de W (statistic)
@@ -287,7 +286,7 @@ def run_wilcoxon_signed_rank(
     effect_size_r = abs(z) / np.sqrt(n)
 
     # Médiane des différences
-    diff = after - before
+    diff = after - before  # type: ignore[operator]
     median_diff = float(np.median(diff))
 
     # Diagnostics
@@ -312,7 +311,7 @@ print(f"W = {{statistic:.4f}}, p = {{p_value:.4f}}")
         method="wilcoxon_signed_rank",
         dataset_id="",
         variables={"var_before": var_before, "var_after": var_after},
-        sample_size=int(len(df_clean)),
+        sample_size=len(df_clean),
         preprocessing=[
             f"Suppression des paires incomplètes : {n_dropped} ligne(s) retirée(s)"
         ],
@@ -326,7 +325,7 @@ print(f"W = {{statistic:.4f}}, p = {{p_value:.4f}}")
         model_metrics={
             "method_family": "inference",
             "effect_size": {"r": float(effect_size_r)},
-            "n_obs_used": int(len(df_clean)),
+            "n_obs_used": len(df_clean),
             "n_obs_dropped": int(n_dropped),
         },
         diagnostics=diagnostics,
@@ -407,11 +406,13 @@ def run_kruskal_wallis(
     eta_squared = (statistic - k + 1) / (n - k) if n > k else 0.0
 
     # Médianes par groupe
-    medians = {str(g): float(np.median(grp)) for g, grp in zip(sorted(unique_groups), groups)}
+    medians = {
+        str(g): float(np.median(grp)) for g, grp in zip(sorted(unique_groups), groups)
+    }
 
     # Diagnostics
     diagnostics: list[DiagnosticFinding] = []
-    diagnostics.extend(check_group_sizes(groups, min_size=10))
+    diagnostics.extend(check_group_sizes(groups, min_size=10))  # type: ignore[list-item]
     diagnostics.extend(_check_tied_ranks(groups))
 
     # Code reproductible
@@ -430,7 +431,7 @@ print(f"H = {{statistic:.4f}}, p = {{p_value:.4f}}")
         method="kruskal_wallis",
         dataset_id="",
         variables={"outcome": outcome, "group": group},
-        sample_size=int(len(df_clean)),
+        sample_size=len(df_clean),
         preprocessing=[
             f"Suppression des valeurs manquantes : {n_dropped} ligne(s) retirée(s)"
         ],
@@ -445,9 +446,11 @@ print(f"H = {{statistic:.4f}}, p = {{p_value:.4f}}")
             "effect_size": {"eta_squared": float(eta_squared)},
             "n_groups": int(k),
             "group_medians": medians,
-            "n_obs_used": int(len(df_clean)),
+            "n_obs_used": len(df_clean),
             "n_obs_dropped": int(n_dropped),
-            "group_sizes": {str(g): int(len(grp)) for g, grp in zip(sorted(unique_groups), groups)},
+            "group_sizes": {
+                str(g): len(grp) for g, grp in zip(sorted(unique_groups), groups)
+            },
         },
         diagnostics=diagnostics,
         warnings=[],
@@ -520,12 +523,12 @@ def run_friedman(
     kendall_w = statistic / (n * (k - 1))
 
     # Médianes par variable
-    medians = {var: float(np.median(arr)) for var, arr in zip(variables, arrays)}
+    medians = {var: float(np.median(arr)) for var, arr in zip(variables, arrays)}  # type: ignore[arg-type]
 
     # Diagnostics
     diagnostics: list[DiagnosticFinding] = []
-    diagnostics.extend(check_group_sizes(arrays, min_size=10))
-    diagnostics.extend(_check_tied_ranks(arrays))
+    diagnostics.extend(check_group_sizes(arrays, min_size=10))  # type: ignore[arg-type]
+    diagnostics.extend(_check_tied_ranks(arrays))  # type: ignore[arg-type]
 
     # Code reproductible
     var_list = ", ".join([f'"{v}"' for v in variables])
@@ -544,7 +547,7 @@ print(f"Chi² = {{statistic:.4f}}, p = {{p_value:.4f}}")
         method="friedman",
         dataset_id="",
         variables={"variables": variables},
-        sample_size=int(len(df_clean)),
+        sample_size=len(df_clean),
         preprocessing=[
             f"Suppression des observations incomplètes : {n_dropped} ligne(s) retirée(s)"
         ],
@@ -559,7 +562,7 @@ print(f"Chi² = {{statistic:.4f}}, p = {{p_value:.4f}}")
             "effect_size": {"kendall_w": float(kendall_w)},
             "n_conditions": int(k),
             "condition_medians": medians,
-            "n_obs_used": int(len(df_clean)),
+            "n_obs_used": len(df_clean),
             "n_obs_dropped": int(n_dropped),
         },
         diagnostics=diagnostics,
@@ -624,8 +627,8 @@ def run_spearman_test(
 
     # Diagnostics
     diagnostics: list[DiagnosticFinding] = []
-    diagnostics.extend(check_group_sizes([x, y], min_size=10))
-    diagnostics.extend(_check_tied_ranks([x, y]))
+    diagnostics.extend(check_group_sizes([x, y], min_size=10))  # type: ignore[list-item]
+    diagnostics.extend(_check_tied_ranks([x, y]))  # type: ignore[list-item]
 
     # Code reproductible
     generated_code = f"""# Test de corrélation de Spearman
@@ -642,7 +645,7 @@ print(f"rho = {{statistic:.4f}}, p = {{p_value:.4f}}")
         method="spearman_test",
         dataset_id="",
         variables={"var1": var1, "var2": var2},
-        sample_size=int(len(df_clean)),
+        sample_size=len(df_clean),
         preprocessing=[
             f"Suppression des valeurs manquantes : {n_dropped} ligne(s) retirée(s)"
         ],
@@ -656,7 +659,7 @@ print(f"rho = {{statistic:.4f}}, p = {{p_value:.4f}}")
         model_metrics={
             "method_family": "inference",
             "effect_size": {"rho": float(statistic)},
-            "n_obs_used": int(len(df_clean)),
+            "n_obs_used": len(df_clean),
             "n_obs_dropped": int(n_dropped),
         },
         diagnostics=diagnostics,
@@ -720,8 +723,8 @@ def run_kendall_test(
 
     # Diagnostics
     diagnostics: list[DiagnosticFinding] = []
-    diagnostics.extend(check_group_sizes([x, y], min_size=10))
-    diagnostics.extend(_check_tied_ranks([x, y]))
+    diagnostics.extend(check_group_sizes([x, y], min_size=10))  # type: ignore[list-item]
+    diagnostics.extend(_check_tied_ranks([x, y]))  # type: ignore[list-item]
 
     # Code reproductible
     generated_code = f"""# Test de corrélation de Kendall
@@ -738,7 +741,7 @@ print(f"tau = {{statistic:.4f}}, p = {{p_value:.4f}}")
         method="kendall_test",
         dataset_id="",
         variables={"var1": var1, "var2": var2},
-        sample_size=int(len(df_clean)),
+        sample_size=len(df_clean),
         preprocessing=[
             f"Suppression des valeurs manquantes : {n_dropped} ligne(s) retirée(s)"
         ],
@@ -752,7 +755,7 @@ print(f"tau = {{statistic:.4f}}, p = {{p_value:.4f}}")
         model_metrics={
             "method_family": "inference",
             "effect_size": {"tau": float(statistic)},
-            "n_obs_used": int(len(df_clean)),
+            "n_obs_used": len(df_clean),
             "n_obs_dropped": int(n_dropped),
         },
         diagnostics=diagnostics,
@@ -851,7 +854,7 @@ _SPEARMAN_TEST_SPEC = MethodSpec(
         "Relation monotone entre les variables",
     ],
     reference_impl="scipy.stats.spearmanr",
-    r_reference="stats::cor.test(..., method=\"spearman\")",
+    r_reference='stats::cor.test(..., method="spearman")',
     phase=17,
 )
 
@@ -867,7 +870,7 @@ _KENDALL_TEST_SPEC = MethodSpec(
         "Relation monotone entre les variables",
     ],
     reference_impl="scipy.stats.kendalltau",
-    r_reference="stats::cor.test(..., method=\"kendall\")",
+    r_reference='stats::cor.test(..., method="kendall")',
     phase=17,
 )
 
